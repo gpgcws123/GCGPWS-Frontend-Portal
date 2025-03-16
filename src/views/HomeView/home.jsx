@@ -3,7 +3,7 @@ import React from 'react';
 import HeroSection from './heroSection';
 import TopStories from './topStorie';
 import NoticeBoard from './noticeboard';
-import Message from './Message';
+import Message from './principalMessae';
 import StudentRecord from './studentRecord';
 import DegreePrograms from './programs';
 import ProfessionalStaff from './staff';
