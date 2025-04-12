@@ -2,22 +2,24 @@
 import React from 'react';
 import HeroSection from './heroSection';
 import TopStories from './topStorie';
-import NoticeBoard from './noticeboard';
 import Message from './principalMessae';
-import StudentRecord from './studentRecord';
-import DegreePrograms from './programs';
-import ProfessionalStaff from './staff';
+import CollegePromoSection from './whyChooseUs';
+import Programs from './programs';
+import GallerySection from './Gallery';
+import VideoSection from './vIdeo';
+import ContactForm from './contactus';
+
 const Home = () => {
     return <div>
-        <HeroSection/>
-        <TopStories/>
-        <NoticeBoard/>
-        <Message/>
-        <StudentRecord/>
-        <DegreePrograms/>
-        <ProfessionalStaff/>
-    
+        <HeroSection />
+        <TopStories />
+        <Message />
+        <CollegePromoSection />
+        <Programs />
         
+<GallerySection/>
+<VideoSection/>
+<ContactForm/>
     </div>
 };
 

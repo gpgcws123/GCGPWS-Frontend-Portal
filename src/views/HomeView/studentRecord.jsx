@@ -1,37 +1,68 @@
-import { useState } from "react";
-import BaseCard from "../../components/simpleCard";
+import React from 'react';
+import SimpleCard from '../../components/simpleCard'; // Adjust path if needed
+import HeadingTitle from '../../components/heading';
 
+// ✅ Import your images here
+import studentsImg from '../../assets/Graduate.svg';
+import staffImg from '../../assets/Graduate.svg';
+import coursesImg from '../../assets/Graduate.svg';
+import graduatesImg from '../../assets/Graduate.svg';
 
-const StudentRecord = () => {
-  const notices = [
-    { id: 1, number: "456+", content: "Current Students" },
-    { id: 2, number:"654+",content: "Qualified Staff" },
-    { id: 3, number:"654+", content: "Current Courses" },
-    { id: 4, number:"654+", content: "Passed Graduates" },
-  ];
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-
+const StatsSection = () => {
   return (
-    <div className="bg-[#ffff] text-[#070707] p-6">
-      <h2 className="text-3xl font-bold text-center underline text-[#070707]">Records</h2>
-      <div className="flex mt-4 space-x-4">
-        <div className="flex space-x-4 overflow-hidden">
-          {notices.map((notice, index) => (
-            <BaseCard
-              key={notice.id}
-              className={`bg-[#b2b2b2] p-4  font-bold text-center flex-col flex justify-center items-center shadow-lg w-40  transition-opacity duration-300${
-                index === currentIndex ? "opacity-100" : "opacity-50"
-              }`}
-            >
-             <span className="text-2xl mb-1">{notice.number}</span>
-             <span>{notice.content}</span>
-            </BaseCard>
-          ))}
+    <section className="text-gray-700 mt-[32px] body-font">
+      <HeadingTitle title="Our Success Counts" width="390px" />
+      <div className="container relative top-[120px] mx-auto">
+        <div className="flex flex-wrap -m-4 text-center">
+
+          {/* ✅ Current Students */}
+          <div className="p-4 md:w-1/4 sm:w-1/2 w-full">
+            <SimpleCard padding="p-6" width="w-[308px]" height="h-[250px]" bgColor='bg-gray' >
+              <SimpleCard width="w-[80px]" height="h-auto" padding="p-4" className="mx-auto" bgColor='bg-White'>
+                <img src={studentsImg} alt="Current Students" className="w-12 h-12 object-contain mx-auto" />
+              </SimpleCard>
+              <h2 className="title-font font-medium text-3xl text-gray-900 mt-4">3567+</h2>
+              <p className="leading-relaxed">Current Students</p>
+            </SimpleCard>
+          </div>
+
+          {/* ✅ Qualified Staff */}
+          <div className="p-4 md:w-1/4 sm:w-1/2 w-full">
+            <SimpleCard padding="p-6" width="w-[308px]" height="h-[250px]" bgColor='bg-black'>
+              <SimpleCard width="w-[80px]" height="h-auto" padding="p-4" className="mx-auto" bgColor='bg-gray' >
+                <img src={staffImg} alt="Qualified Staff" className="w-12 h-12 object-contain mx-auto" />
+              </SimpleCard>
+              <h2 className="title-font font-medium text-3xl text-White mt-4">3567+</h2>
+              <p className="leading-relaxed text-White ">Qualified Staff</p>
+            </SimpleCard>
+          </div>
+
+          {/* ✅ Current Courses */}
+          <div className="p-4 md:w-1/4 sm:w-1/2 w-full">
+            <SimpleCard padding="p-6" width="w-[308px]" height="h-[250px]" bgColor='bg-gray'>
+              <SimpleCard width="w-[80px]" height="h-auto" padding="p-4" className="mx-auto" bgColor='bg-White'>
+                <img src={coursesImg} alt="Current Courses" className="w-12 h-12 object-contain mx-auto" />
+              </SimpleCard>
+              <h2 className="title-font font-medium text-3xl text-gray-900 mt-4">3567+</h2>
+              <p className="leading-relaxed">Current Courses</p>
+            </SimpleCard>
+          </div>
+
+          {/* ✅ Passed Graduates */}
+          <div className="p-4 md:w-1/4 sm:w-1/2 w-full">
+            <SimpleCard padding="p-6" width="w-[308px]" height="h-[250px]" bgColor='bg-black'>
+              <SimpleCard width="w-[80px]" height="h-auto" padding="p-4" className="mx-auto" bgColor='bg-gray'>
+                <img src={graduatesImg} alt="Passed Graduates" className="w-12 h-12 object-contain mx-auto" />
+              </SimpleCard>
+              <h2 className="title-font font-medium text-3xl text-White mt-4">3567+</h2>
+              <p className="leading-relaxed text-White">Passed Graduates</p>
+            </SimpleCard>
+          </div>
+
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
-export default StudentRecord;
+export default StatsSection;

@@ -13,12 +13,12 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-[#070707] text-white fixed top-0 left-0 w-full z-10">
+    <nav className="bg-black text-white fixed top-0 left-0 w-full z-10">
       <div className="flex flex-wrap items-center justify-between max-w-screen-xl p-1 mx-auto">
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <img src={logo} className="w-[70px] h-[70px] mr-3" alt="GPGCWS Logo" />
-          <span className="text-[20px] font-[400] font-[Poppins] text-white">GPGCWS WEB PORTAL</span>
+          <span className="text-[20px] font-[400] font-poppins text-white">GPGCWS WEB PORTAL</span>
         </Link>
 
         {/* Right-side controls */}
@@ -40,32 +40,40 @@ const Navbar = () => {
         <div className={`lg:flex lg:items-center lg:w-auto lg:order-1 w-full ${isOpen ? "block" : "hidden"}`} id="mobile-menu">
           <ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
             <li>
-              <Link to="/" className="block text-[16px] font-[400] font-[Plus Jakarta Sans] py-2 pl-3 pr-4 text-white hover:text-[#efff11] lg:p-0">
+              <Link to="/" className="block text-[16px] font-[400] font-jakarta py-2 pl-3 pr-4 text-white hover:text-[#efff11] lg:p-0">
                 HOME
               </Link>
             </li>
 
             {/* Reusable Dropdown */}
             {[
-              { title: "FACILITIES", link: "/facilities", links: [
-                { to: "/facilities/lab", label: "Computer Lab" },
-                { to: "facilities/library", label: "Library" },
-                { to: "facilities/canteen", label: "Canteen" }
-              ]},
-              { title: "ADMISSION", link: "/admission", links: [
-                { to: "/admission/criteria", label: "Criteria" },
-                { to: "/admission/process", label: "Process" },
-                { to: "/admission/fees", label: "Fees" }
-              ]},
-              { title: "ACADEMIC", link: "/academic", links: [
-                { to: "/academic/departments", label: "Departments" },
-                { to: "/academic/courses", label: "Courses" },
-                { to: "/academic/faculty", label: "Faculty" }
-              ]},
-              { title: "NEWS & EVENTS", link: "/news", links: [
-                { to: "/news/latest", label: "Latest News" },
-                { to: "/news/events", label: "Events" }
-              ]}
+              {
+                title: "FACILITIES", link: "/facilities", links: [
+                  { to: "/facilities/lab", label: "Computer Lab" },
+                  { to: "facilities/library", label: "Library" },
+                  { to: "facilities/canteen", label: "Canteen" }
+                ]
+              },
+              {
+                title: "ADMISSION", link: "/admission", links: [
+                  { to: "/admission/criteria", label: "Criteria" },
+                  { to: "/admission/process", label: "Process" },
+                  { to: "/admission/fees", label: "Fees" }
+                ]
+              },
+              {
+                title: "ACADEMIC", link: "/academic", links: [
+                  { to: "/academic/departments", label: "Departments" },
+                  { to: "/academic/courses", label: "Courses" },
+                  { to: "/academic/faculty", label: "Faculty" }
+                ]
+              },
+              {
+                title: "NEWS & EVENTS", link: "/news", links: [
+                  { to: "/news/latest", label: "Latest News" },
+                  { to: "/news/events", label: "Events" }
+                ]
+              }
             ].map(({ title, link, links }) => (
               <li key={title} className="relative">
                 {/* Text should be a Link with Icon Next to it */}

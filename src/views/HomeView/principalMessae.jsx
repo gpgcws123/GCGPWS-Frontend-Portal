@@ -2,31 +2,45 @@ import React from "react";
 import BaseCard from "../../components/card";
 import ContentSection from "../../components/contextSection";
 import image1 from "../../assets/heroImage7.jpg";
+import Button from "../../components/button";
+import ImageCard from "../../components/imageCard";
+import Heading from "../../components/heading";
+import StatsSection from "./studentRecord";
 
 export default function Message() {
   return (
-    <div className="bg-[#ffff] min-h-screen flex flex-col items-center py-8 text-white">
-      <h2 className="text-3xl font-bold mb-6 underline text-[#070707]">Principal Message</h2>
-      <div className="flex gap-6 max-w-4xl">
-        {/* First BaseCard with image */}
-        <BaseCard isFlexible>
-          <div className="w-full h-full">
-            <img
-              src={image1}
-              alt="Principal pic"
-              className="w-full h-full object-cover"
-            />
+    <>
+      <div className="bg-[#ffff] flex flex-col h-[100%] items-center py-8 text-white">
+        <div className="my-8">
+          <Heading title="Principal Message" />
+        </div>
+        {/* Wrapper div to center content */}
+        <div className="flex flex-col mt-8 lg:flex-row gap-6 max-w-4xl items-center justify-center">
+          {/* First BaseCard with image */}
+          <div className="flex justify-center">
+            <ImageCard src={image1} width="516px" height="330px" />
           </div>
-        </BaseCard>
 
-        {/* Second BaseCard with ContentSection */}
-        <BaseCard bgColor="#b2b2b2" isFlexible>
-          <ContentSection
-            title="Principal's Message"
-            description="Welcome to Government Post Graduate College for Women.We uphold values of merit, honor, and hard work, providing quality education that empowers women for successful careers and leadership. Along with academics, we offer extracurricular activities, sports, and career guidance for a well-rounded experience. I encourage students to utilize our excellent faculty and facilities, choose a path that suits their strengths, and strive for excellence. Explore our website for information on programs, faculty, and activities."
-          />
-        </BaseCard>
+          {/* Second BaseCard with ContentSection */}
+          <div className="flex justify-center">
+            <BaseCard height="518px" width="563px" bgColor="#b2b2b2" isFlexible>
+              <div className="text-center mt-6">
+                <ContentSection
+                  title="Principal's Message"
+                  description="Welcome to Government Post Graduate College for Women. Our institution is dedicated to fostering a culture of academic excellence, personal growth, and leadership. We believe that education is the most powerful tool for empowering women and shaping a brighter future.At GPGCWS, we provide not just quality education but also opportunities for skill development, extracurricular engagement, and career advancement. Our highly qualified faculty members are committed to mentoring students and helping them achieve their aspirations."
+                />
+                <div className="mt-7">
+                  <Button height="43px" width="145px" boxShadow={false} title="Read More" to="/download" />
+                </div>
+              </div>
+            </BaseCard>
+          </div>
+        </div>
+
       </div>
-    </div>
+      <div className="mt-[38px]">
+        <StatsSection />
+      </div>
+    </>
   );
 }

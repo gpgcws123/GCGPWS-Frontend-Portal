@@ -42,7 +42,7 @@ const HeroSection = () => {
               style={{
                 backgroundImage: `url(${image})`,
                 backgroundSize: 'cover',
-              
+
               }}
             />
           ) : null
@@ -51,8 +51,8 @@ const HeroSection = () => {
 
       {/* Text Overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center bg-black bg-opacity-50">
-        <h1 className="text-4xl font-bold sm:text-6xl text-white px-4 md:px-8">
-          Welcome to Govt Post Graduate College For Girls, Sheikhupura
+        <h1 className="text-4xl font-bold sm:text-6xl font-jakarta text-white px-4 md:px-8">
+          Welcome to Govt Post Graduate College <br />For Girls Sheikhupura
         </h1>
       </div>
     </div>
