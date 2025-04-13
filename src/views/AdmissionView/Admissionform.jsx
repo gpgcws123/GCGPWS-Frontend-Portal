@@ -80,7 +80,7 @@ export default function AdmissionForm() {
   }
   
   return (
-    <div className="max-w-4xl mx-auto my-8 p-6 bg-white rounded-lg shadow-lg">
+    <div className="container mx-auto my-8 mt-24 p-6 bg-white rounded-lg shadow-lg">
       <div className="flex items-center justify-center mb-6">
         <GraduationCap className="h-8 w-8 text-blue-600 mr-2" />
         <h1 className="text-2xl font-bold text-center text-gray-800">College Admission Form</h1>
