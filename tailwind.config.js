@@ -4,11 +4,16 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
-
-    // Or if using `src` directory:
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    container: {
+      center: true, // centers the container (adds mx-auto)
+      
+      screens: {
+        xl: "1440px", // max width for xl breakpoint
+      },
+    },
     extend: {
       fontFamily: {
         jakarta: ["Plus Jakarta Sans", "sans-serif"],

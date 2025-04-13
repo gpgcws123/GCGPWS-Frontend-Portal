@@ -29,8 +29,8 @@ const AdmissionCariteriaSection = () => {
   ];
 
   return (
-    <div className="bg-white h-auto flex flex-col items-center px-8 py-16 text-black relative w-auto">
-      {/* ✅ Heading */}
+    <div className="bg-white container h-auto flex flex-col items-center px-8 py-16 text-black relative w-auto">
+    
       <div className="w-full flex items-center justify-center relative mb-12">
         <HeadingTitle title="Admission Ceritria" width="350px" />
       </div>

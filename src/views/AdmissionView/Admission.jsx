@@ -9,6 +9,7 @@ import admissionImg1 from "../../assets/CoursImages.png";
 import admissionImg2 from "../../assets/CoursImages.png";
 import admissionImg3 from "../../assets/CoursImages.png";
 import HeadingWithButton from "../../components/headingWithButton";
+import AdmissionForm from "./Admissionform";
 
 const AdmissionSection = () => {
   const admissionData = [
@@ -39,7 +40,7 @@ const AdmissionSection = () => {
   ];
 
   return (
-    <div className="bg-white h-auto flex flex-col items-center px-8 py-16 text-black relative w-auto">
+    <div className="bg-white h-auto flex flex-col items-center px-8 py-16 text-black relative container">
       {/* ✅ Heading */}
       <div className="w-full flex items-center justify-center relative mb-12">
         <HeadingTitle title="Admissions Open" width="320px" />
@@ -85,15 +86,15 @@ const AdmissionSection = () => {
             </div>
 
             <div className=" flex justify-center">
-              <Button
-                rounded="rounded-none"
-                height="43px"
-                width="400px"
-                className="px-8 bg-yellow-400"
-                boxShadow={false}
-                title="Apply Online Now"
-                to={program.link}
-              />
+            <Button
+  rounded="rounded-none"
+  height="43px"
+  width="400px"
+  className="px-8 bg-yellow-400 hover:bg-yellow-500" // Added hover effect
+  boxShadow={false}
+  title="Apply Online Now"
+  to="/admission/admissionform" // This should match your route path
+/>
             </div>
           </SimpleCard>
         ))}

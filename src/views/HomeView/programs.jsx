@@ -47,11 +47,11 @@ const ProgramsSection = () => {
           bgColor='bg-gray'
             key={index}
               padding='p-0'
-            width="w-[412px]"
+            width="w-[390px]"
             height="h-auto"
           >
             {/* ✅ Program Image */}
-            <div className="w-[412px] h-[180px]">
+            <div className="w-[390px] h-[180px]">
               <img
                 src={program.image}
                 alt={program.title}

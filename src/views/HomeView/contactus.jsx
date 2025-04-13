@@ -62,7 +62,8 @@ const ContactForm = () => {
   };
 
   return (
-    <section className="bg-white flex font-jakarta justify-between flex-col py-8 lg:py-16  mx-auto max-w-screen-lg">
+    <section className="bg-white flex font-jakarta justify-between flex-col py-8 lg:py-16  w-full">
+      <div className=" container">
       <div className="mb-6">
         <HeadingTitle title="Contact us" width="220px" />
       </div>
@@ -150,6 +151,7 @@ const ContactForm = () => {
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         ></iframe>
+      </div>
       </div>
     </section>
   );

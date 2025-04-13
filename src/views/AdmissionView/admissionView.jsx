@@ -6,7 +6,7 @@ import AdmissionCariteriaSection from "./AdmssionCriteria";
     return(
         <>
         <AdmissionHeroSection/>
-     <AdmissionSection/>
+     <AdmissionSection/>   
      <AdmissionPoliciesSection/>
      <AdmissionCariteriaSection/>
 

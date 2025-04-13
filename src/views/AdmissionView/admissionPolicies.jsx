@@ -29,8 +29,8 @@ const AdmissionPoliciesSection = () => {
   ];
 
   return (
-    <div className="bg-gray h-auto flex flex-col items-center px-8 py-16 text-black relative w-auto">
-      {/* ✅ Heading */}
+    <div className="bg-gray h-auto flex flex-col items-center px-8 py-16 text-black relative ">
+      <div className="container">
       <div className="w-full flex items-center justify-center relative mb-12">
         <HeadingTitle title="Admission Policies" width="220px" />
       </div>
@@ -73,6 +73,7 @@ const AdmissionPoliciesSection = () => {
             </div>
           </SimpleCard>
         ))}
+      </div>
       </div>
     </div>
   );

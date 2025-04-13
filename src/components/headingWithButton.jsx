@@ -7,7 +7,7 @@ const HeadingWithButton = ({
   buttonText = "All Events in GPGCWS",
   to = "/all-events",
   height = "50px",
-  width = "350px",
+  width = "auto",
   bgColor = "#eff111",
   hoverBgColor = "#b2b2b2",
   hoverTextColor = "white",
@@ -17,9 +17,9 @@ const HeadingWithButton = ({
   onClick = null,
 }) => {
   return (
-    <div className="w-full flex items-center justify-between mb-8">
+    <div className=" container  flex items-center justify-between mb-8">
       {/* Left-aligned heading */}
-      <h1 className="text-4xl font-bold font-jakarta text-black">
+      <h1 className="text-4xl font-bold font-jakarta text-black ">
         {headingText}
       </h1>
       

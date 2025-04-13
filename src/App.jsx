@@ -7,6 +7,7 @@ import Facilities from './views/FacilitiesView/facilities';
 import NewsEvents from './views/News&EventView/news&Event';
 import Academic from './views/AcademicView/academicView';
 import Admission from './views/AdmissionView/admissionView';
+import AdmissionForm from './views/AdmissionView/Admissionform';
 const App = () => {
     return (
         <Router>
@@ -17,6 +18,8 @@ const App = () => {
                     <Route path="/admission" element={<Admission />} />
                     <Route path="/academic" element={<Academic />} />
                     <Route path="/news" element={<NewsEvents />} />
+                    <Route path="/admission/admissionform" element={<AdmissionForm />} />
+                    
                     
                 </Routes>
             </Layout>

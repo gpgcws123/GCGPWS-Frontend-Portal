@@ -6,9 +6,10 @@ import Button from '../../components/button';
 
 const AdmissionHeroSection = () => {
     return (
-        <div className="relative w-full h-screen mt-8 overflow-hidden bg-gray flex items-center justify-center">
+        <div className="relative w-full  mt-8 overflow-hidden bg-gray flex items-center justify-center">
             {/* Main Content Wrapper */}
-            <div className="flex flex-col md:flex-row items-center justify-between max-w-[1350px] w-full p-8 gap-8">
+            <div className='container'>
+            <div className="flex flex-col mt-10 md:flex-row items-center justify-between max-w-[1350px] w-full p-8 gap-8">
                 
                 {/* Text Section */}
                 <div className="md:w-1/2">
@@ -25,6 +26,7 @@ const AdmissionHeroSection = () => {
                 <div className="md:w-1/2 flex justify-center">
                     <ImageCard src={library} width="580px" height="460px" />
                 </div>
+            </div>
             </div>
         </div>
     );
