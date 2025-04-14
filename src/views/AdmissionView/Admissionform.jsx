@@ -12,6 +12,9 @@ export default function AdmissionForm() {
     city: '',
     state: '',
     zipCode: '',
+    // Course selection
+    course: 'btech',
+    admissionYear: '',
     // Matriculation (10th) details
     matricSchool: '',
     matricBoard: '',
@@ -22,8 +25,6 @@ export default function AdmissionForm() {
     interBoard: '',
     interPassingYear: '',
     interPercentage: '',
-    course: 'btech',
-    admissionYear: '', // Moved from Intermediate to Apply For section
   });
   
   const [documents, setDocuments] = useState({
@@ -59,10 +60,19 @@ export default function AdmissionForm() {
     console.log("Documents:", documents);
     setSubmitted(true);
   };
+  const degreeCourses = ['btech', 'bsc', 'mtech', 'mba', 'msc', 'mca'];
+
+  // Courses that need ONLY Matric details
+  const intermediateCourses = ['fsc', 'premedical', 'ics', 'icom'];
   
+  const showMatricDetails = 
+    degreeCourses.includes(formData.course) || 
+    intermediateCourses.includes(formData.course);
+  
+  const showInterDetails = degreeCourses.includes(formData.course);
   if (submitted) {
     return (
-      <div className="container  mt-10 p-6 bg-white rounded-lg shadow-lg">
+      <div className="container mt-10 p-6 bg-white rounded-lg shadow-lg">
         <div className="text-center my-12">
           <GraduationCap className="mx-auto h-16 w-16 text-green-500" />
           <h2 className="mt-4 text-2xl font-bold text-gray-800">Application Submitted Successfully!</h2>
@@ -87,7 +97,7 @@ export default function AdmissionForm() {
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Personal Information */}
+        {/* 1. Personal Information - First Section */}
         <div className="p-4 bg-gray-50 rounded-md">
           <h2 className="flex items-center text-lg font-semibold text-gray-700 mb-4">
             <UserCircle className="h-5 w-5 mr-2 text-blue-600" />
@@ -220,70 +230,118 @@ export default function AdmissionForm() {
           </div>
         </div>
         
-        {/* Academic Information */}
+        {/* 2. Apply For Section - Second Section */}
+        <div className="p-4 bg-gray-50 rounded-md">
+          <h2 className="flex items-center text-lg font-semibold text-gray-700 mb-4">
+            <GraduationCap className="h-5 w-5 mr-2 text-blue-600" />
+            Apply For
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Course *</label>
+              <select
+                name="course"
+                value={formData.course}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="btech">B.Tech</option>
+                <option value="bsc">B.Sc</option>
+                <option value="fsc">FSC</option>
+                <option value="premedical">Pre-Medical</option>
+                <option value="ics">ICS</option>
+                <option value="icom">ICOM</option>
+                <option value="mca">MCA</option>
+                <option value="mtech">M.Tech</option>
+                <option value="mba">MBA</option>
+                <option value="msc">M.Sc</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Admission Year *</label>
+              <input
+                type="number"
+                name="admissionYear"
+                value={formData.admissionYear}
+                onChange={handleInputChange}
+                required
+                min="2024"
+                max="2027"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* 3. Academic Information - Third Section */}
         <div className="p-4 bg-gray-50 rounded-md">
           <h2 className="flex items-center text-lg font-semibold text-gray-700 mb-4">
             <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
             Academic Information
           </h2>
           
-          {/* Matriculation (10th) Details */}
-          <div className="mb-6">
-            <h3 className="text-md font-medium text-gray-700 mb-3 border-b border-gray-200 pb-2">Matriculation (10th) Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">School Name *</label>
-                <input
-                  type="text"
-                  name="matricSchool"
-                  value={formData.matricSchool}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Board *</label>
-                <input
-                  type="text"
-                  name="matricBoard"
-                  value={formData.matricBoard}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Year of Passing *</label>
-                <input
-                  type="number"
-                  name="matricPassingYear"
-                  value={formData.matricPassingYear}
-                  onChange={handleInputChange}
-                  required
-                  min="1990"
-                  max="2025"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Percentage/CGPA *</label>
-                <input
-                  type="number"
-                  name="matricPercentage"
-                  value={formData.matricPercentage}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+          {/* Matriculation (10th) Details - Only shown for non-FSC/Pre-Medical/ICS/ICOM courses */}
+          {showMatricDetails && (
+              <div className="mb-6">
+              <h3 className="text-md font-medium text-gray-700 mb-3 border-b border-gray-200 pb-2">Matriculation (10th) Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">School Name *</label>
+                  <input
+                    type="text"
+                    name="matricSchool"
+                    value={formData.matricSchool}
+                    onChange={handleInputChange}
+                    required={showMatricDetails}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Board *</label>
+                  <input
+                    type="text"
+                    name="matricBoard"
+                    value={formData.matricBoard}
+                    onChange={handleInputChange}
+                    required={showMatricDetails}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Year of Passing *</label>
+                  <input
+                    type="number"
+                    name="matricPassingYear"
+                    value={formData.matricPassingYear}
+                    onChange={handleInputChange}
+                    required={showMatricDetails}
+                    min="1990"
+                    max="2025"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Percentage/CGPA *</label>
+                  <input
+                    type="number"
+                    name="matricPercentage"
+                    value={formData.matricPercentage}
+                    onChange={handleInputChange}
+                    required={showMatricDetails}
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
           
-          {/* Intermediate (12th) Details */}
+          {/* Intermediate (12th) Details - Always shown */}
+          {showInterDetails && (
           <div>
             <h3 className="text-md font-medium text-gray-700 mb-3 border-b border-gray-200 pb-2">Intermediate (12th) Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -338,43 +396,10 @@ export default function AdmissionForm() {
               </div>
             </div>
           </div>
-          
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Applying For *</label>
-              <select
-                name="course"
-                value={formData.course}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="btech">B.Tech</option>
-                <option value="bca">BCA</option>
-                <option value="mca">MCA</option>
-                <option value="mtech">M.Tech</option>
-                <option value="mba">MBA</option>
-                <option value="bsc">B.Sc</option>
-                <option value="msc">M.Sc</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Dakhla Year (Admission Year) *</label>
-              <input
-                type="number"
-                name="admissionYear"
-                value={formData.admissionYear}
-                onChange={handleInputChange}
-                required
-                min="2024"
-                max="2027"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+          )}
         </div>
         
-        {/* Document Upload */}
+        {/* 4. Document Upload - Fourth Section */}
         <div className="p-4 bg-gray-50 rounded-md">
           <h2 className="flex items-center text-lg font-semibold text-gray-700 mb-4">
             <Upload className="h-5 w-5 mr-2 text-blue-600" />
@@ -405,29 +430,32 @@ export default function AdmissionForm() {
               </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Matriculation (10th) Marksheet *</label>
-              <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-2 text-gray-500" />
-                    <p className="mb-1 text-sm text-gray-500">
-                      {documents.matricMarksheet ? documents.matricMarksheet.name : "Click to upload"}
-                    </p>
-                    <p className="text-xs text-gray-500">PDF, JPG up to 2MB</p>
-                  </div>
-                  <input 
-                    type="file" 
-                    name="matricMarksheet" 
-                    className="hidden" 
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    required
-                  />
-                </label>
+            {/* Only show Matric Marksheet upload if needed */}
+            {showMatricDetails &&  (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Matriculation (10th) Marksheet *</label>
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                      <p className="mb-1 text-sm text-gray-500">
+                        {documents.matricMarksheet ? documents.matricMarksheet.name : "Click to upload"}
+                      </p>
+                      <p className="text-xs text-gray-500">PDF, JPG up to 2MB</p>
+                    </div>
+                    <input 
+                      type="file" 
+                      name="matricMarksheet" 
+                      className="hidden" 
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                      required={showMatricDetails}
+                    />
+                  </label>
+                </div>
               </div>
-            </div>
-            
+            )}
+            {showInterDetails && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Intermediate (12th) Marksheet *</label>
               <div className="flex items-center justify-center w-full">
@@ -450,7 +478,7 @@ export default function AdmissionForm() {
                 </label>
               </div>
             </div>
-            
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">ID Proof *</label>
               <div className="flex items-center justify-center w-full">

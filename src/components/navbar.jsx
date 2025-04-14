@@ -23,7 +23,7 @@ const Navbar = () => {
 
         {/* Right-side controls */}
         <div className="flex items-center lg:order-2">
-          <Button height="43px" width="125px" title="LOGIN" to="/download" />
+          <Button height="43px" width="125px" title="LOGIN" to="/login" />
 
           {/* Mobile menu button */}
           <button
