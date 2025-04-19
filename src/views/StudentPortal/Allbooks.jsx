@@ -138,6 +138,7 @@ const AllBooks = () => {
 
                 <div className="flex justify-center">
                   <Button
+                  to='/academic/Detailpage'
                     rounded="rounded-[10px]"
                     height="43px"
                     width="370px"

@@ -115,17 +115,7 @@ const Alllecture = [
          <p className="p-3 text-center text-[20px] font-jakarta font-semibold">
            {video.title}
          </p>
-       
-         {/* Learn More Button */}
-         <div className="w-full ">
-           <Button
-             rounded="rounded-b-[10px]"
-             height="43px"
-             width="400px"
-             boxShadow={false}
-             title="Learn More"
-           />
-         </div>
+      
        </SimpleCard>
         ))}
       </div>

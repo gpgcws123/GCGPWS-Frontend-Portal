@@ -27,7 +27,7 @@ const StudentNavbar = ({ setIsAuthenticated }) => {
     <nav className="bg-black text-white fixed top-0 left-0 w-full z-10">
     <div className="flex flex-wrap items-center justify-between max-w-screen-xl p-1 mx-auto">
       {/* Logo */}
-      <Link to="/student-portal" className="flex items-center">
+      <Link to="/" className="flex items-center">
         <img src={logo} className="w-[70px] h-[70px] mr-3" alt="GPGCWS Logo" />
         <span className="text-[20px] font-[400] font-poppins text-white">GPGCWS WEB PORTAL</span>
       </Link>

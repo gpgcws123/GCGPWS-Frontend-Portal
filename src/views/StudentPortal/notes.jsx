@@ -74,6 +74,7 @@ const NotesCollectionCard = () => {
               {/* ✅ Button pinned at the bottom */}
               <div className="flex justify-center">
                 <Button
+                to='/academic/Detailpage'
                   rounded="rounded-b-[10px]"
                   height="43px"
                   width="370px"
