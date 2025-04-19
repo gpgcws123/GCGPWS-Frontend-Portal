@@ -14,8 +14,8 @@ const Navbar = () => {
 
   return (
     <nav className="bg-black text-white fixed top-0 left-0 w-full z-10">
-      <div className="flex flex-wrap items-center justify-between max-w-screen-xl p-1 mx-auto">
-        {/* Logo */}
+      <div className="flex flex-wrap items-center justify-between container p-1 mx-auto">
+        
         <Link to="/" className="flex items-center">
           <img src={logo} className="w-[70px] h-[70px] mr-3" alt="GPGCWS Logo" />
           <span className="text-[20px] font-[400] font-poppins text-white">GPGCWS WEB PORTAL</span>
@@ -23,7 +23,7 @@ const Navbar = () => {
 
         {/* Right-side controls */}
         <div className="flex items-center lg:order-2">
-          <Button height="43px" width="125px" title="LOGIN" to="/login" />
+          <Button height="43px" width="125px" title="Login" to="/login" />
 
           {/* Mobile menu button */}
           <button
@@ -49,29 +49,36 @@ const Navbar = () => {
             {[
               {
                 title: "FACILITIES", link: "/facilities", links: [
-                  { to: "/facilities/lab", label: "Computer Lab" },
-                  { to: "facilities/library", label: "Library" },
-                  { to: "facilities/canteen", label: "Canteen" }
+                  
+                  { to: "/facilities#library", label: "Library" },
+                  { to: "/facilities#computer-lab", label: "Computer Lab" },
+                  { to: "/facilities#hostel", label: "Hostel" },
+                  { to: "/facilities#transport", label: "Transport" },
+                  { to: "/facilities#masjid", label: "Masjid" },
+                  { to: "/facilities#dispensary", label: "Dispensary" },
+                  { to: "/facilities#canteen", label: "Canteen" },
+                  { to: "/facilities#sport-fitness", label: "Sport & Fitness" }
                 ]
               },
               {
                 title: "ADMISSION", link: "/admission", links: [
-                  { to: "/admission/criteria", label: "Criteria" },
-                  { to: "/admission/process", label: "Process" },
-                  { to: "/admission/fees", label: "Fees" }
+                  { to: "/admisson/alladmisson", label: "New Admissions" },
+                  { to: "/admisson/alladmissonpolicies", label: "Ploices" },
+                  { to: "/admisson/alladmissoncritria", label: "Criteria" }
                 ]
               },
               {
                 title: "ACADEMIC", link: "/academic", links: [
-                  { to: "/academic/departments", label: "Departments" },
-                  { to: "/academic/courses", label: "Courses" },
-                  { to: "/academic/faculty", label: "Faculty" }
+                  { to: "/academic/alldepartment", label: "Departments" },
+                  { to: "/academic/allprograms", label: "Programs" },
+                  { to: "/academic/allteacherfaculty", label: "Faculty" }
                 ]
               },
               {
                 title: "NEWS & EVENTS", link: "/news", links: [
-                  { to: "/news/latest", label: "Latest News" },
-                  { to: "/news/events", label: "Events" }
+                  { to: "/news/allnews", label: "Latest News" },
+                  { to: "/news/allevents", label: "Events" },
+                  { to: "/news/allcultural", label: "Cultural" }
                 ]
               }
             ].map(({ title, link, links }) => (

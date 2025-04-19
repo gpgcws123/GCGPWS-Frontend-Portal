@@ -2,7 +2,7 @@ import React from "react";
 import BaseCard from "../../components/card";
 import ContentSection from "../../components/contextSection";
 import Button from "../../components/button";
-import image1 from "../../assets/heroImage2.jpg";
+import image1 from "../../assets/topstories.jpg";
 import ImageCard from "../../components/imageCard";
 import NoticeBoard from "./noticeboard";
 import HeadingTitle from "../../components/heading";
@@ -21,13 +21,16 @@ export default function TopStories() {
         </div>
 
         {/* Content Card Section */}
-        <div className="col-span-12 lg:col-span-7 flex justify-center">
+        <div className="col-span-12 lg:col-span-7 flex justify-center whitespace-pre-line">
           <BaseCard height="330px" bgColor="#ffff">
             <ContentSection
-              title="GPGCWS Lab Renovation"
-              description="The computer lab has been upgraded with modern high-performance systems, high-speed internet, and an interactive smart board. With improved furniture and ventilation, the renovation aims to enhance the learning environment, supporting students in coding, research, and projects. This upgrade reflects a commitment to providing students with the best technological resources."
+              title="Top Stories"
+              description="1. College Admissions Open for 2025-2026 Academic Year.
+              2. GPGCWS Celebrates Annual Cultural Fest with Amazing Performances.
+              3. Important Updates: Exam Schedule & Academic Calendar Released.
+              4. Exam Results Declared: Check Your Performance Online Now."
             />
-            <Button height="43px" width="145px" boxShadow={false} title="Read More" to="/download" />
+            <Button height="43px" width="145px" boxShadow={false} title="Read More" to='/academic/Detailpage' />
 
           </BaseCard>
         </div>

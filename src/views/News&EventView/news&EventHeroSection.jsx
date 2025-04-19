@@ -1,6 +1,6 @@
 import React from 'react';
 import ImageCard from '../../components/imageCard';
-import library from '../../assets/library.jpg';
+import library from '../../assets/newsandevents.jpg';
 import ContentSection from '../../components/contextSection';
 import Button from '../../components/button';
 
@@ -13,8 +13,10 @@ const NewsEventsHeroSection = () => {
                 {/* Text Section */}
                 <div className="md:w-1/2">
                     <ContentSection 
-                        title="GPcws college festial event" 
-                        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Elementum felis, sed ullamcorper tempus faucibus in imperdiet. Semper justo mauris sed fusce erat aenean tristique."
+                        title="News&Events Details" 
+                        description="Stay updated with the latest news, cultural videos, and upcoming events at GPGCWS. From campus highlights to exciting activities, this section keeps you connected with all that’s happening on campus."
+
+
                     />
                     <div className="mt-4">
                         <Button height="43px" width="145px" boxShadow={false} title="Read More" to="/download" />

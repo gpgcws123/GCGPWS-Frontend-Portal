@@ -18,9 +18,8 @@ const LibrarySection = () => {
                 {/* Text Section */}
                 <div className="md:w-1/2">
                     <ContentSection 
-                        title="College Library" 
-                        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Elementum felis, sed ullamcorper tempus faucibus in imperdiet. Semper justo mauris sed fusce erat aenean tristique. 
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Elementum felis, sed ullamcorper tempus faucibus in imperdiet. Semper justo mauris sed fusce erat aenean tristique."
+                        title=" Library" 
+                        description="The GPGCWS library is a vital part of academic life, offering a wide range of books, reference materials, and digital resources. It provides students with a calm and focused environment to study, conduct research, and enhance their knowledge beyond the classroom. Equipped with both traditional and modern facilities, the library supports learning across all departments. Whether preparing for exams or exploring new topics, students find the library a valuable resource throughout their academic journey."
                     />
                 </div>
 

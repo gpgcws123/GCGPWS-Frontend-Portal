@@ -2,45 +2,45 @@ import React from 'react';
 import SimpleCard from '../../components/simpleCard';
 import Button from '../../components/button';
 import HeadingTitle from '../../components/heading';
-import interImg from '../../assets/CoursImages.png';
-import graduateImg from '../../assets/CoursImages.png';
-import postGradImg from '../../assets/CoursImages.png';
+import interImg from '../../assets/computer.jpg';
+import graduateImg from '../../assets/math.jpg';
+import postGradImg from '../../assets/urdu.jpg';
 import ContentSection from '../../components/contextSection';
 import HeadingWithButton from '../../components/headingWithButton';
 
 const DepartmentSection = () => {
   const programsData = [
     {
-      title: 'department of Intermediate',
+      title: 'Department of CS&IT',
       description:
-        'Explore NUST’s intermediate programs designed to build your foundation for a successful academic career.',
+        'Build your tech foundation with programs that combine theoretical knowledge and practical skills, preparing you for the modern digital world.',
       image: interImg,
       link: '/intermediate',
     },
     {
-      title: 'department of bs cs',
+      title: 'Department of Math',
       description:
-        'NUST offers diverse graduate programs with modern facilities and experienced faculty to guide your future.',
+        'Sharpen your problem-solving and analytical thinking through programs designed to explore both pure and applied mathematics.',
       image: graduateImg,
       link: '/graduate',
     },
     {
-      title: 'department of Chemistry',
+      title: 'Department of Urdu',
       description:
-        'Advance your knowledge with NUST’s competitive postgraduate programs in various disciplines.',
+        'Delve into the rich literary heritage of Urdu and enhance your skills in language, poetry, and critical analysis.',
       image: postGradImg,
       link: '/postgraduate',
     },
   ];
 
   return (
-    <div className="w-full mb-10 bg-white">
-<div className=' container'>      {/* ✅ Heading */}
+    <div className="max-w-[1360px] mx-auto mb-10 bg-white">
+      {/* ✅ Heading */}
       <div className='my-7'>
-        <HeadingTitle title="Programs" width='220px' />
+        <HeadingTitle title="Departments" width='220px' />
       </div>
       <div className='px-4'>
-        <HeadingWithButton headingText='all department program' buttonText='all programs here' />
+        <HeadingWithButton headingText='Our Departments at GPGCWS' buttonText='all programs here' to='/academic/alldepartment' />
       </div>
       
       {/* ✅ Program Cards */}
@@ -50,12 +50,12 @@ const DepartmentSection = () => {
             bgColor='bg-gray'
             key={index}
             padding='p-0'
-            width="w-[390px]"
-            height="h-[500px]"
+            width="w-[380px]"
+            height="h-[600px]"
             className="flex flex-col"
           >
             {/* ✅ Program Image */}
-            <div className="w-[390px] h-[180px]">
+            <div className="w-[380px] h-[180px]">
               <img
                 src={program.image}
                 alt={program.title}
@@ -77,17 +77,13 @@ const DepartmentSection = () => {
                   width="145px"
                   boxShadow={false}
                   title="Read More"
-                  to={program.link}
+                 to='/academic/Detailpage'
                 />
               </div>
             </div>
           </SimpleCard>
         ))}
       </div>
-    
-    
-    
-    </div>
     </div>
   );
 };

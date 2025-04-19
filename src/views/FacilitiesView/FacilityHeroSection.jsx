@@ -1,6 +1,6 @@
 import React from 'react';
 import ImageCard from '../../components/imageCard';
-import library from '../../assets/library.jpg';
+import library from '../../assets/facilities.png';
 import ContentSection from '../../components/contextSection';
 import Button from '../../components/button';
 
@@ -13,8 +13,8 @@ const FacilitiesHeroSection = () => {
                 {/* Text Section */}
                 <div className="md:w-1/2">
                     <ContentSection 
-                        title="College Library" 
-                        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Elementum felis, sed ullamcorper tempus faucibus in imperdiet. Semper justo mauris sed fusce erat aenean tristique."
+                        title="Facilities Provide at GPGCWS" 
+                        description="GPGCWS offers a wide range of modern facilities to support student life and learning. Our well-stocked library, advanced computer labs, secure hostel, clean canteen, and peaceful masjid ensure a comfortable and enriching campus experience for all students."
                     />
                     <div className="mt-4">
                         <Button height="43px" width="145px" boxShadow={false} title="Read More" to="/download" />

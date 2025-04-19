@@ -2,9 +2,9 @@ import React from 'react';
 import SimpleCard from '../../components/simpleCard';
 import Button from '../../components/button';
 import HeadingTitle from '../../components/heading';
-import interImg from '../../assets/CoursImages.png';
-import graduateImg from '../../assets/CoursImages.png';
-import postGradImg from '../../assets/CoursImages.png';
+import interImg from '../../assets/intemediate.jpg';
+import graduateImg from '../../assets/graduate.jpg';
+import postGradImg from '../../assets/postgraduate.jpg';
 import ContentSection from '../../components/contextSection';
 import FacultyCardRow from './staff';
 
@@ -13,21 +13,23 @@ const ProgramsSection = () => {
     {
       title: 'Intermediate',
       description:
-        'Explore NUST’s intermediate programs designed to build your foundation for a successful academic career.',
+        'Begin your academic journey with our well-structured intermediate programs, designed to build a solid foundation in Science, Arts, and Commerce for future success.',
       image: interImg,
       link: '/intermediate',
     },
     {
       title: 'Graduate',
       description:
-        'NUST offers diverse graduate programs with modern facilities and experienced faculty to guide your future.',
+        'Gain valuable knowledge and practical skills through our graduate programs, structured to prepare students for academic excellence and professional success.',
       image: graduateImg,
       link: '/graduate',
     },
     {
       title: 'Post Graduate',
       description:
-        'Advance your knowledge with NUST’s competitive postgraduate programs in various disciplines.',
+        'Enhance your academic profile with our postgraduate degrees, offering advanced learning, research opportunities, and professional growth in a supportive environment.'
+
+        ,
       image: postGradImg,
       link: '/postgraduate',
     },
@@ -47,11 +49,11 @@ const ProgramsSection = () => {
           bgColor='bg-gray'
             key={index}
               padding='p-0'
-            width="w-[390px]"
+            width="w-[380px]"
             height="h-auto"
           >
             {/* ✅ Program Image */}
-            <div className="w-[390px] h-[180px]">
+            <div className="w-[380px] h-[180px]">
               <img
                 src={program.image}
                 alt={program.title}
@@ -73,7 +75,7 @@ const ProgramsSection = () => {
                   width="145px"
                   boxShadow={false}
                   title="Read More"
-                  to={program.link}
+                 to='/academic/Detailpage'
                 />
               </div>
             </div>

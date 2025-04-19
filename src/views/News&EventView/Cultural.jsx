@@ -37,7 +37,7 @@ const CulturalSection = () => {
       <div className="w-full flex items-center justify-center relative mb-12 mt-12">
         <HeadingTitle title="Cultural Videos" width="220px" />
       </div>
-      <HeadingWithButton headingText="Cultural Title" width="auto" buttonText="All Cultural" />
+      <HeadingWithButton headingText="Cultural Title" width="auto" buttonText="All Cultural"  to="/news/allcultural"/>
       
       <div className="w-full flex flex-wrap justify-center gap-10">
         {videoList.map((video, index) => (

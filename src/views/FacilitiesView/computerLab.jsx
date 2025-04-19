@@ -1,5 +1,5 @@
 import React from 'react';
-import library from '../../assets/library.jpg';
+import heroImage2 from '../../assets/heroImage2.jpg';
 import ContentSection from '../../components/contextSection';
 import HeadingTitle from '../../components/heading';
 
@@ -19,15 +19,16 @@ const CompLabSection = () => {
                 <div className="md:w-1/2">
                     <ContentSection 
                         title="Computer Lab" 
-                        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Elementum felis, sed ullamcorper tempus faucibus in imperdiet. Semper justo mauris sed fusce erat aenean tristique. 
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Elementum felis, sed ullamcorper tempus faucibus in imperdiet. Semper justo mauris sed fusce erat aenean tristique."
+                        description="GPGCWS computer lab is fully equipped with modern systems and high-speed internet to support students in learning and practicing digital skills. It provides access to programming tools, online courses, and academic software essential for various disciplines. Whether it's coding, research, or working on projects, the lab offers a productive and tech-friendly space. Regular practical sessions ensure students gain hands-on experience and stay updated with current technologies.
+
+                        "
                     />
                 </div>
 
                 {/* Image Section */}
                 <div className="md:w-1/2 flex justify-center">
                     <img 
-                        src={library} 
+                        src={heroImage2} 
                         alt="College Library"
                         className="w-[580px] h-[400px] rounded-[10px] shadow-[4_10px_15px_rgba(0,0,0,0.3)]"
                     />

@@ -13,11 +13,11 @@ import LeftArrowIcon from "../../assets/left-arrow-svgrepo-com.svg";
 import RightArrowIcon from "../../assets/right-arrow-svgrepo-com.svg";
 
 // ✅ Gallery Images
-import galleryImg1 from "../../assets/CoursImages.png";
-import galleryImg2 from "../../assets/CoursImages.png";
-import galleryImg3 from "../../assets/CoursImages.png";
-import galleryImg4 from "../../assets/CoursImages.png";
-import galleryImg5 from "../../assets/CoursImages.png";
+import galleryImg1 from "../../assets/Sport.jpg";
+import galleryImg2 from "../../assets/Culture.jpg";
+import galleryImg3 from "../../assets/convocation.jpg";
+import galleryImg4 from "../../assets/independence.jpg";
+import galleryImg5 from "../../assets/planting.jpg";
 
 const GallerySection = () => {
   const prevRef = useRef(null);
@@ -37,27 +37,27 @@ const GallerySection = () => {
     {
       date: "06",
       monthYear: "Mar 2024",
-      title: "MSN Psychiatric Nurse Practitioner Program Info Session",
+      title: "Sport Day Celebration",
       description:
-        "Join us for an interactive virtual information session about Alverno's Psychiatric Mental Health Nurse Practitioner program.",
+        "Join us for an energetic day filled with fun games, competitions, and team spirit at the annual GPGCWS Sports Day. ",
       image: galleryImg1,
       link: "/session-details",
     },
     {
       date: "12",
       monthYear: "Apr 2024",
-      title: "Business Management Virtual Info Session",
+      title: "Cultural Festival at GPGCWS",
       description:
-        "Learn about the Business Management programs and career opportunities in this virtual session.",
+        "Celebrate the rich traditions and diversity of our campus with music, art, and colorful performances. ",
       image: galleryImg2,
       link: "/session-details",
     },
     {
       date: "20",
       monthYear: "May 2024",
-      title: "Computer Science Advanced Program Info Session",
+      title: "Convocation",
       description:
-        "Explore the Computer Science program designed to boost your career with modern technologies.",
+        "Celebrate academic success as we honor the graduating students in a formal ceremony filled with pride and achievement.",
       image: galleryImg3,
       link: "/session-details",
     },
@@ -146,7 +146,7 @@ const GallerySection = () => {
                 width="400px"
                 boxShadow={false}
                 title="Learn More"
-                to={session.link}
+               to='/academic/Detailpage'
               />
             </SimpleCard>
           </SwiperSlide>

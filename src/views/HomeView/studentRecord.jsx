@@ -21,7 +21,7 @@ const StatsSection = () => {
               <SimpleCard width="w-[80px]" height="h-auto" padding="p-4" className="mx-auto" bgColor='bg-White'>
                 <img src={studentsImg} alt="Current Students" className="w-12 h-12 object-contain mx-auto" />
               </SimpleCard>
-              <h2 className="title-font font-medium text-3xl text-gray-900 mt-4">3567+</h2>
+              <h2 className="title-font font-medium text-3xl text-gray-900 mt-4">10000+</h2>
               <p className="leading-relaxed">Current Students</p>
             </SimpleCard>
           </div>
@@ -32,7 +32,7 @@ const StatsSection = () => {
               <SimpleCard width="w-[80px]" height="h-auto" padding="p-4" className="mx-auto" bgColor='bg-gray' >
                 <img src={staffImg} alt="Qualified Staff" className="w-12 h-12 object-contain mx-auto" />
               </SimpleCard>
-              <h2 className="title-font font-medium text-3xl text-White mt-4">3567+</h2>
+              <h2 className="title-font font-medium text-3xl text-White mt-4">150+</h2>
               <p className="leading-relaxed text-White ">Qualified Staff</p>
             </SimpleCard>
           </div>
@@ -43,7 +43,7 @@ const StatsSection = () => {
               <SimpleCard width="w-[80px]" height="h-auto" padding="p-4" className="mx-auto" bgColor='bg-White'>
                 <img src={coursesImg} alt="Current Courses" className="w-12 h-12 object-contain mx-auto" />
               </SimpleCard>
-              <h2 className="title-font font-medium text-3xl text-gray-900 mt-4">3567+</h2>
+              <h2 className="title-font font-medium text-3xl text-gray-900 mt-4">100+</h2>
               <p className="leading-relaxed">Current Courses</p>
             </SimpleCard>
           </div>
@@ -54,7 +54,7 @@ const StatsSection = () => {
               <SimpleCard width="w-[80px]" height="h-auto" padding="p-4" className="mx-auto" bgColor='bg-gray'>
                 <img src={graduatesImg} alt="Passed Graduates" className="w-12 h-12 object-contain mx-auto" />
               </SimpleCard>
-              <h2 className="title-font font-medium text-3xl text-White mt-4">3567+</h2>
+              <h2 className="title-font font-medium text-3xl text-White mt-4">1000+</h2>
               <p className="leading-relaxed text-White">Passed Graduates</p>
             </SimpleCard>
           </div>

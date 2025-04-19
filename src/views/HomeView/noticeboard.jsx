@@ -13,8 +13,8 @@ import { useRef } from "react";
 import HeadingTitle from "../../components/heading";
 const NoticeBoard = () => {
   const notices = [
-    "Notice for Orientation of BS Morning Program to be held on 22-October-2024 at college hall",
-    "Notice for Orientation of BS Evening Program to be held on 24-October-2024 at college hall",
+    "Notice for Orientation ",
+    "Cultural Day at GPGCWS",
     "Public Holiday Notification",
     "Sports Event Details",
   ];

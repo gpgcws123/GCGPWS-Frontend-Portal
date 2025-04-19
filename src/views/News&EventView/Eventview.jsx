@@ -4,9 +4,9 @@ import SimpleCard from "../../components/simpleCard";
 import Button from "../../components/button";
 
 // ✅ Gallery Images
-import galleryImg1 from "../../assets/CoursImages.png";
-import galleryImg2 from "../../assets/CoursImages.png";
-import galleryImg3 from "../../assets/CoursImages.png";
+import galleryImg1 from "../../assets/Sport.jpg";
+import galleryImg2 from "../../assets/Culture.jpg";
+import galleryImg3 from "../../assets/convocation.jpg";
 import HeadingWithButton from "../../components/headingWithButton";
 
 const EventSection = () => {
@@ -14,27 +14,27 @@ const EventSection = () => {
     {
       date: "06",
       monthYear: "Mar 2024",
-      title: "MSN Psychiatric Nurse Practitioner Program Info Session",
+      title: "Sports Day Celebration",
       description:
-        "Join us for an interactive virtual information session about Alverno's Psychiatric Mental Health Nurse Practitioner program.",
+        "Join us for an energetic day filled with fun games, competitions, and team spirit at the annual GPGCWS Sports Day.",
       image: galleryImg1,
       link: "/session-details",
     },
     {
       date: "12",
       monthYear: "Apr 2024",
-      title: "Business Management Virtual Info Session",
+      title: "Cultural Festival at GPGCWS",
       description:
-        "Learn about the Business Management programs and career opportunities in this virtual session.",
+        "Celebrate the rich traditions and diversity of our campus with music, art, and colorful performances. ",
       image: galleryImg2,
       link: "/session-details",
     },
     {
       date: "20",
       monthYear: "May 2024",
-      title: "Computer Science Advanced Program Info Session",
+      title: "Convocation",
       description:
-        "Explore the Computer Science program designed to boost your career with modern technologies.",
+        "Celebrate academic success as we honor the graduating students in a formal ceremony filled with pride and achievement.",
       image: galleryImg3,
       link: "/session-details",
     },
@@ -44,9 +44,9 @@ const EventSection = () => {
     <div className="bg-white h-auto flex flex-col items-center px-8 py-8 text-black relative w-auto">
       {/* ✅ Heading */}
       <div className="w-full flex items-center justify-center relative mb-8">
-        <HeadingTitle title="Gallery" width="220px" />
+        <HeadingTitle title="Events" width="220px" />
       </div>
-      <HeadingWithButton headingText="Upcoming Events in GPGCWS"  width="auto" buttonText="All Events in GPGCWS" />
+      <HeadingWithButton headingText="Upcoming Events in GPGCWS"  width="auto" buttonText="All Events in GPGCWS" to="/news/allevents" />
   
       {/* ✅ Simple Cards Layout (No Swiper) */}
       <div className="w-full flex flex-wrap justify-center gap-6">
@@ -86,7 +86,7 @@ const EventSection = () => {
               width="400px"
               boxShadow={false}
               title="Learn More"
-              to={session.link}
+              to='/academic/Detailpage'
             />
           </SimpleCard>
         ))}

@@ -1,26 +1,26 @@
 import React from 'react';
 import SimpleCard from '../../components/simpleCard';
-import teacher1 from '../../assets/CoursImages.png';
-import teacher2 from '../../assets/CoursImages.png';
-import teacher3 from '../../assets/CoursImages.png';
+import teacher1 from '../../assets/faculty.jpg';
+import teacher2 from '../../assets/faculty.jpg';
+import teacher3 from '../../assets/faculty.jpg';
 import HeadingTitle from '../../components/heading';
-
+import { Link } from "react-router-dom";
 const FacultyCardRow = () => {
   const facultyData = [
     {
-      name: 'Miss Ayesha',
-      designation: 'Assistant Professor',
-      subject: 'Physics',
+      name: 'Miss Fareeha',
+      designation: 'Lecturer',
+      subject: 'Computer',
       image: teacher1,
     },
     {
-      name: 'Miss Sara',
-      designation: 'Senior Lecturer',
-      subject: 'Chemistry',
+      name: 'Miss Saba',
+      designation: 'Lecturer',
+      subject: 'English',
       image: teacher2,
     },
     {
-      name: 'Miss Fatima',
+      name: 'Miss Yasemin',
       designation: 'Lecturer',
       subject: 'Mathematics',
       image: teacher3,
@@ -55,12 +55,15 @@ const FacultyCardRow = () => {
             <h2 className="font-bold font-jakarta  text-[32px]">{teacher.name}</h2> {/* 36px */}
             <p className="text-Black font-poppins mb-2 font-medium text-[24px]">{teacher.designation}</p> {/* 28px */}
 
-            {/* ✅ Subject Tag */}
-            <div className="flex justify-center">
+         
+           {/* ✅ Subject Tag */}
+        <Link to='/academic/Detailpage'>           <div className="flex justify-center">
               <span className="bg-black text-white px-7 py-1 font-jakarta rounded-[10px] text-[24px] font-bold">
                 {teacher.subject}
               </span>
             </div>
+            </Link>
+ 
           </div>
         </SimpleCard>
       ))}

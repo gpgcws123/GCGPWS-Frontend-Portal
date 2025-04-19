@@ -18,10 +18,7 @@ const CollegePromoSection = () => {
                         <div className="flex flex-col ml-14 justify-center">
                             <h2 className="text-[40px] text-Black font-jakarta font-semibold  mb-6">Why Choose Us?</h2>
                             <p className="text-2xl font-normal font-poppins  text-Black">
-                                Choosing Govt. Queen Mary Graduate College empowers female students of all age groups
-                                from class one to graduate level to embark on a transformative educational journey where
-                                they can acquire knowledge, skills, and experiences that will shape their future
-                                success. It offers diverse academic programs with accommodation.
+                                Choosing the right college shapes your future and GPGCWS stands out as the preferred choice for those seeking quality education, personal growth, and career success. With experienced faculty and a dynamic learning environment, we empower students to explore, innovate, and achieve their full potential.
                             </p>
                         </div>
 
@@ -35,7 +32,9 @@ const CollegePromoSection = () => {
                                 </SimpleCard>
                                 <h3 className="font-semibold  text-[28px] font-jakarta mt-3  ">Academics</h3>
                                 <p className="text-[15px] font-poppins  text-Black">
-                                    Unlock your potential at our exceptional all-age girl's institution, featuring state-of-the-art facilities and extensive libraries.Unlock your potential at our exceptional all-age girl's institution, featuring state-of-the-art facilities and extensive libraries.
+                                    At GPGCWS, we prioritize academic excellence through a balanced blend of theory and practical learning. Our evolving curriculum ensures students gain relevant knowledge and skills aligned with modern trends and global standards.
+
+
                                 </p>
                             </SimpleCard>
 
@@ -44,10 +43,11 @@ const CollegePromoSection = () => {
                                 <SimpleCard bgColor='bg-gray' width="w-20" height='h-20' padding="p-4">
                                     <img src={careerImg} alt="Career Success" className="w-12 h-12 object-contain" />
                                 </SimpleCard>
-                                <h3 className="font-semibold  text-[28px] font-jakarta mt-3  ">Academics</h3>
+                                <h3 className="font-semibold  text-[28px] font-jakarta mt-3  ">Career Success</h3>
                                 <p className="text-[15px] font-poppins  text-Black">
-                                    Unlock your potential at our exceptional all-age girl's institution, featuring state-of-the-art facilities and extensive libraries.Unlock your potential at our exceptional all-age girl's institution, featuring state-of-the-art facilities and extensive libraries.
-                                </p>
+                                GPGCWS equips students for career success through skill-building, counseling, internships, and job placement support. Our graduates succeed in diverse careers, reflecting the quality education and guidance they receive.
+
+</p>
                             </SimpleCard>
 
                             {/* ✅ Highly Experienced Card */}
@@ -55,9 +55,9 @@ const CollegePromoSection = () => {
                                 <SimpleCard width="w-20" bgColor='bg-gray' height='h-20' padding="p-4">
                                     <img src={experiencedImg} alt="Highly Experienced" className="w-12 h-12 object-contain" />
                                 </SimpleCard>
-                                <h3 className="font-semibold  text-[28px] font-jakarta mt-3  ">Academics</h3>
+                                <h3 className="font-semibold  text-[28px] font-jakarta mt-3  ">Highly Experienced</h3>
                                 <p className="text-[15px] font-poppins  text-Black">
-                                    Unlock your potential at our exceptional all-age girl's institution, featuring state-of-the-art facilities and extensive libraries.Unlock your potential at our exceptional all-age girl's institution, featuring state-of-the-art facilities and extensive libraries.
+                                Our experienced faculty combines academic expertise with real-world insight, guiding and inspiring students at every step to think independently and succeed.
                                 </p>
                             </SimpleCard>
 
@@ -66,9 +66,11 @@ const CollegePromoSection = () => {
                                 <SimpleCard width="w-20" bgColor='bg-gray' height='h-20' padding="p-4">
                                     <img src={locationImg} alt="Location" className="w-12 h-12 object-contain" />
                                 </SimpleCard>
-                                <h3 className="font-semibold  text-[28px] font-jakarta mt-3  ">Academics</h3>
+                                <h3 className="font-semibold  text-[28px] font-jakarta mt-3  ">Location</h3>
                                 <p className="text-[15px] font-poppins  text-Black">
-                                    Unlock your potential at our exceptional all-age girl's institution, featuring state-of-the-art facilities and extensive libraries.Unlock your potential at our exceptional all-age girl's institution, featuring state-of-the-art facilities and extensive libraries.
+                                Ideally located, GPGCWS offers a peaceful learning environment with easy access to city resources, guest lectures, and real-world learning experiences.
+
+
                                 </p>
                             </SimpleCard>
 

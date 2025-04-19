@@ -4,20 +4,20 @@ import SimpleCard from "../../components/simpleCard";
 import Button from "../../components/button";
 
 // ✅ Policy Images
-import policyImg1 from "../../assets/CoursImages.png";
-import policyImg2 from "../../assets/CoursImages.png";
-import policyImg3 from "../../assets/CoursImages.png";
+import policyImg1 from "../../assets/notice.jpg";
+import policyImg2 from "../../assets/office.jpg";
+import policyImg3 from "../../assets/lists.jpg";
 import HeadingWithButton from "../../components/headingWithButton";
 
 const AdmissionCariteriaSection = () => {
   const policiesData = [
     {
-      title: "Last Years merit",
+      title: "Admisssion Notice",
       image: policyImg1,
       link: "/policy-details",
     },
     {
-      title: "Last Years merit",
+      title: "Admission Office",
       image: policyImg2,
       link: "/policy-details",
     },
@@ -29,12 +29,12 @@ const AdmissionCariteriaSection = () => {
   ];
 
   return (
-    <div className="bg-white container h-auto flex flex-col items-center px-8 py-16 text-black relative w-auto">
-    
+    <div className="bg-white h-auto flex flex-col items-center px-8 py-16 text-black relative w-auto">
+      {/* ✅ Heading */}
       <div className="w-full flex items-center justify-center relative mb-12">
-        <HeadingTitle title="Admission Ceritria" width="350px" />
+        <HeadingTitle title="Admission Criteria" width="350px" />
       </div>
-      <HeadingWithButton headingText="Important Policies" width="auto" buttonText="View All Policies" />
+      <HeadingWithButton headingText="Admission Criteria" width="auto" buttonText="View All Policies" to="/admisson/alladmissoncritria" />
 
       {/* ✅ Simple Cards Layout (No Swiper) */}
       <div className="w-full flex flex-wrap justify-between gap-10">
@@ -69,7 +69,7 @@ const AdmissionCariteriaSection = () => {
                 className="px-8"
                 boxShadow={false}
                 title="Learn More"
-                to={policy.link}
+               to='/academic/Detailpage'
               />
             </div>
           </SimpleCard>

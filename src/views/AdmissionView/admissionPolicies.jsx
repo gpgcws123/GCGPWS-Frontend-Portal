@@ -4,37 +4,37 @@ import SimpleCard from "../../components/simpleCard";
 import Button from "../../components/button";
 
 // ✅ Policy Images
-import policyImg1 from "../../assets/CoursImages.png";
-import policyImg2 from "../../assets/CoursImages.png";
-import policyImg3 from "../../assets/CoursImages.png";
+import policyImg1 from "../../assets/applyonline.jpg";
+import policyImg2 from "../../assets/fee.jpg";
+import policyImg3 from "../../assets/propectus.jpg";
 import HeadingWithButton from "../../components/headingWithButton";
 
 const AdmissionPoliciesSection = () => {
   const policiesData = [
     {
-      title: "Eligibility Criteria for Admission",
+      title: "How to apply online",
       image: policyImg1,
       link: "/policy-details",
     },
     {
-      title: "Scholarship and Financial Aid Policies",
+      title: "Fee Structure of all Programs",
       image: policyImg2,
       link: "/policy-details",
     },
     {
-      title: "Code of Conduct and Regulations",
+      title: "Admission Prospectus",
       image: policyImg3,
       link: "/policy-details",
     },
   ];
 
   return (
-    <div className="bg-gray h-auto flex flex-col items-center px-8 py-16 text-black relative ">
-      <div className="container">
+    <div className="bg-gray h-auto flex flex-col items-center px-8 py-16 text-black relative w-auto">
+      {/* ✅ Heading */}
       <div className="w-full flex items-center justify-center relative mb-12">
         <HeadingTitle title="Admission Policies" width="220px" />
       </div>
-      <HeadingWithButton headingText="Important Policies" width="auto" buttonText="View All Policies" />
+      <HeadingWithButton headingText="Important Policies" width="auto" buttonText="View All Policies" to="/admisson/alladmissonpolicies" />
 
       {/* ✅ Simple Cards Layout (No Swiper) */}
       <div className="w-full flex flex-wrap justify-between gap-10">
@@ -68,12 +68,11 @@ const AdmissionPoliciesSection = () => {
                 className="px-8"
                 boxShadow={false}
                 title="Read More"
-                to={policy.link}
+                to='/academic/Detailpage'
               />
             </div>
           </SimpleCard>
         ))}
-      </div>
       </div>
     </div>
   );

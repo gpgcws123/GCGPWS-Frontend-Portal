@@ -4,25 +4,25 @@ import SimpleCard from "../../components/simpleCard";
 import Button from "../../components/button";
 
 // ✅ News Images
-import newsImg1 from "../../assets/CoursImages.png";
-import newsImg2 from "../../assets/CoursImages.png";
-import newsImg3 from "../../assets/CoursImages.png";
+import newsImg1 from "../../assets/schedule.jpg";
+import newsImg2 from "../../assets/holiday.jpg";
+import newsImg3 from "../../assets/planting.jpg";
 import HeadingWithButton from "../../components/headingWithButton";
 
 const NewsSection = () => {
   const newsData = [
     {
-      title: "Breakthrough in AI Technology",
+      title: "Exam Schedule",
       image: newsImg1,
       link: "/news-details",
     },
     {
-      title: "Stock Market Reaches New Heights",
+      title: "Public Holiday",
       image: newsImg2,
       link: "/news-details",
     },
     {
-      title: "New Environmental Policies Announced",
+      title: "Tree Planting Campaign",
       image: newsImg3,
       link: "/news-details",
     },
@@ -34,7 +34,7 @@ const NewsSection = () => {
       <div className="w-full flex items-center justify-center relative mb-12">
         <HeadingTitle title="Latest News" width="220px" />
       </div>
-        <HeadingWithButton headingText="Trending News" width="auto" buttonText="All News" />
+        <HeadingWithButton headingText="Trending News" width="auto" buttonText="All News" to="/news/allnews" />
       
 
       {/* ✅ Simple Cards Layout (No Swiper) */}
@@ -69,7 +69,7 @@ const NewsSection = () => {
                 className="px-8"
                 boxShadow={false}
                 title="Read More"
-                to={news.link}
+               to='/academic/Detailpage'
               />
             </div>
           </SimpleCard>
