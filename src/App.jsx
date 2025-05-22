@@ -26,6 +26,7 @@ import AllTeacherFaculty from './views/AcademicView/allteacherfaculty';
 import AllEventView from './views/News&EventView/allEventView';
 import AllNewsView from './views/News&EventView/allNewView';
 import AllCulturals from './views/News&EventView/allCultural';
+import AdminPanel from './views/AdminDashboardView/adminPanel';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(sessionStorage.getItem('isAuthenticated') === 'true');
@@ -62,6 +63,13 @@ const App = () => {
         <Route path="/student-portal/All-Lecture" element={<StudentMainLayout><AllLecture/></StudentMainLayout>} />
         <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/signup" element={<SignupPage />} />
+       <Route
+  path="/admin"
+  element={
+      <AdminPanel />
+    
+  }
+/>
         
         <Route
           path="/student-portal"

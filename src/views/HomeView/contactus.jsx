@@ -144,7 +144,7 @@ const ContactForm = () => {
 
         {/* Google Map inside ImageCard */}
         <iframe
-          class="w-[550px] h-full border-black border-[5px] rounded-[10px]  shadow-[4px_10px_30px_0px_rgba(0,0,0,0.3)] "
+          className="w-[550px] h-full border-black border-[5px] rounded-[10px]  shadow-[4px_10px_30px_0px_rgba(0,0,0,0.3)] "
           src="https://www.google.com/maps/embed/v1/place?q=Sheikhupura,+Pakistan&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
           allowFullScreen=""
           loading="lazy"
