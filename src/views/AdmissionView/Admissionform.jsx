@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { Upload, SendHorizontal, UserCircle, BookOpen, GraduationCap, Phone, Mail, Calendar, MapPin } from 'lucide-react';
+import { Upload, SendHorizontal, UserCircle, BookOpen, GraduationCap, Phone, Mail, Calendar, MapPin, Loader } from 'lucide-react';
+import axios from 'axios';
+
+const API_URL = 'http://localhost:8000/api'; // Updated to the correct port
 
 export default function AdmissionForm() {
   const [formData, setFormData] = useState({
@@ -26,16 +29,26 @@ export default function AdmissionForm() {
     interPassingYear: '',
     interPercentage: '',
   });
-  
+
   const [documents, setDocuments] = useState({
     photo: null,
     matricMarksheet: null,
     interMarksheet: null,
     idProof: null,
   });
-  
+
+  const [documentPreviews, setDocumentPreviews] = useState({
+    photo: null,
+    matricMarksheet: null,
+    interMarksheet: null,
+    idProof: null,
+  });
+
   const [submitted, setSubmitted] = useState(false);
-  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [applicationId, setApplicationId] = useState(null);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -43,33 +56,106 @@ export default function AdmissionForm() {
       [name]: value
     });
   };
-  
+
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     if (files && files[0]) {
+      // Create a preview URL for the image
+      const preview = URL.createObjectURL(files[0]);
+      setDocumentPreviews({
+        ...documentPreviews,
+        [name]: preview
+      });
+
+      // Store the file for later upload
       setDocuments({
         ...documents,
         [name]: files[0]
       });
     }
   };
-  
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form Data:", formData);
-    console.log("Documents:", documents);
-    setSubmitted(true);
+
+  const uploadToCloudinary = async (file) => {
+    try {
+      const uploadPreset = 'student_profiles_unsigned'; // Update with your Cloudinary upload preset
+      const cloudName = 'dkcdjdlqs'; // Update with your Cloudinary cloud name
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        formData
+      );
+
+      return response.data.secure_url;
+    } catch (error) {
+      console.error('Error uploading to Cloudinary:', error);
+      throw new Error('Failed to upload document');
+    }
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Upload documents to Cloudinary
+      const uploadPromises = [];
+      const uploadedUrls = {};
+
+      for (const [key, file] of Object.entries(documents)) {
+        if (file) {
+          uploadPromises.push(
+            uploadToCloudinary(file).then(url => {
+              uploadedUrls[`${key}Url`] = url;
+            })
+          );
+        }
+      }
+
+      await Promise.all(uploadPromises);
+
+      // Submit form data with document URLs to API
+      const submissionData = {
+        ...formData,
+        ...uploadedUrls,
+      };
+
+      // Submit to backend without authentication
+      const response = await axios.post(
+        `${API_URL}/admissions/submit`,
+        submissionData
+      );
+
+      if (response.data?.success) {
+        console.log('Application submitted:', response.data);
+        setApplicationId(response.data.applicationId);
+        setSubmitted(true);
+      } else {
+        throw new Error(response.data?.message || 'Failed to submit application');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setError(error.response?.data?.message || error.message || 'Failed to submit application. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const degreeCourses = ['btech', 'bsc', 'mtech', 'mba', 'msc', 'mca'];
 
   // Courses that need ONLY Matric details
   const intermediateCourses = ['fsc', 'premedical', 'ics', 'icom'];
-  
-  const showMatricDetails = 
-    degreeCourses.includes(formData.course) || 
+
+  const showMatricDetails =
+    degreeCourses.includes(formData.course) ||
     intermediateCourses.includes(formData.course);
-  
+
   const showInterDetails = degreeCourses.includes(formData.course);
+
   if (submitted) {
     return (
       <div className="container mt-10 p-6 bg-white rounded-lg shadow-lg">
@@ -77,9 +163,48 @@ export default function AdmissionForm() {
           <GraduationCap className="mx-auto h-16 w-16 text-green-500" />
           <h2 className="mt-4 text-2xl font-bold text-gray-800">Application Submitted Successfully!</h2>
           <p className="mt-2 text-gray-600">Thank you for submitting your application to our college.</p>
-          <p className="mt-1 text-gray-600">Your application will be reviewed, and you will be contacted shortly.</p>
-          <button 
-            onClick={() => setSubmitted(false)}
+          <p className="mt-1 text-gray-600">Your application reference number is: <strong>{applicationId}</strong></p>
+          <p className="mt-1 text-gray-600">Please save this reference number for future correspondence.</p>
+          <p className="mt-1 text-gray-600">We have sent a confirmation email to your registered email address.</p>
+          <p className="mt-1 text-gray-600">Your application will be reviewed, and you will be contacted via email shortly.</p>
+          <button
+            onClick={() => {
+              setSubmitted(false);
+              // Reset form
+              setFormData({
+                firstName: '',
+                lastName: '',
+                email: '',
+                phone: '',
+                dob: '',
+                address: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                course: 'btech',
+                admissionYear: '',
+                matricSchool: '',
+                matricBoard: '',
+                matricPassingYear: '',
+                matricPercentage: '',
+                interCollege: '',
+                interBoard: '',
+                interPassingYear: '',
+                interPercentage: '',
+              });
+              setDocuments({
+                photo: null,
+                matricMarksheet: null,
+                interMarksheet: null,
+                idProof: null,
+              });
+              setDocumentPreviews({
+                photo: null,
+                matricMarksheet: null,
+                interMarksheet: null,
+                idProof: null,
+              });
+            }}
             className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Submit Another Application
@@ -88,14 +213,20 @@ export default function AdmissionForm() {
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto my-8 mt-24 p-6 bg-white rounded-lg shadow-lg">
       <div className="flex items-center justify-center mb-6">
         <GraduationCap className="h-8 w-8 text-blue-600 mr-2" />
         <h1 className="text-2xl font-bold text-center text-gray-800">College Admission Form</h1>
       </div>
-      
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <p className="font-medium">Error: {error}</p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 1. Personal Information - First Section */}
         <div className="p-4 bg-gray-50 rounded-md">
@@ -175,7 +306,7 @@ export default function AdmissionForm() {
               />
             </div>
           </div>
-          
+
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               <div className="flex items-center">
@@ -192,7 +323,7 @@ export default function AdmissionForm() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
@@ -229,14 +360,14 @@ export default function AdmissionForm() {
             </div>
           </div>
         </div>
-        
+
         {/* 2. Apply For Section - Second Section */}
         <div className="p-4 bg-gray-50 rounded-md">
           <h2 className="flex items-center text-lg font-semibold text-gray-700 mb-4">
             <GraduationCap className="h-5 w-5 mr-2 text-blue-600" />
             Apply For
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Course *</label>
@@ -274,17 +405,17 @@ export default function AdmissionForm() {
             </div>
           </div>
         </div>
-        
+
         {/* 3. Academic Information - Third Section */}
         <div className="p-4 bg-gray-50 rounded-md">
           <h2 className="flex items-center text-lg font-semibold text-gray-700 mb-4">
             <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
             Academic Information
           </h2>
-          
+
           {/* Matriculation (10th) Details - Only shown for non-FSC/Pre-Medical/ICS/ICOM courses */}
           {showMatricDetails && (
-              <div className="mb-6">
+            <div className="mb-6">
               <h3 className="text-md font-medium text-gray-700 mb-3 border-b border-gray-200 pb-2">Matriculation (10th) Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -339,89 +470,100 @@ export default function AdmissionForm() {
               </div>
             </div>
           )}
-          
+
           {/* Intermediate (12th) Details - Always shown */}
           {showInterDetails && (
-          <div>
-            <h3 className="text-md font-medium text-gray-700 mb-3 border-b border-gray-200 pb-2">Intermediate (12th) Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">College/School Name *</label>
-                <input
-                  type="text"
-                  name="interCollege"
-                  value={formData.interCollege}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Board *</label>
-                <input
-                  type="text"
-                  name="interBoard"
-                  value={formData.interBoard}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Year of Passing *</label>
-                <input
-                  type="number"
-                  name="interPassingYear"
-                  value={formData.interPassingYear}
-                  onChange={handleInputChange}
-                  required
-                  min="1990"
-                  max="2025"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Percentage/CGPA *</label>
-                <input
-                  type="number"
-                  name="interPercentage"
-                  value={formData.interPercentage}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+            <div>
+              <h3 className="text-md font-medium text-gray-700 mb-3 border-b border-gray-200 pb-2">Intermediate (12th) Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">College/School Name *</label>
+                  <input
+                    type="text"
+                    name="interCollege"
+                    value={formData.interCollege}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Board *</label>
+                  <input
+                    type="text"
+                    name="interBoard"
+                    value={formData.interBoard}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Year of Passing *</label>
+                  <input
+                    type="number"
+                    name="interPassingYear"
+                    value={formData.interPassingYear}
+                    onChange={handleInputChange}
+                    required
+                    min="1990"
+                    max="2025"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Percentage/CGPA *</label>
+                  <input
+                    type="number"
+                    name="interPercentage"
+                    value={formData.interPercentage}
+                    onChange={handleInputChange}
+                    required
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
             </div>
-          </div>
           )}
         </div>
-        
+
         {/* 4. Document Upload - Fourth Section */}
         <div className="p-4 bg-gray-50 rounded-md">
           <h2 className="flex items-center text-lg font-semibold text-gray-700 mb-4">
             <Upload className="h-5 w-5 mr-2 text-blue-600" />
             Document Upload
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Passport Size Photo *</label>
               <div className="flex items-center justify-center w-full">
                 <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-2 text-gray-500" />
-                    <p className="mb-1 text-sm text-gray-500">
-                      {documents.photo ? documents.photo.name : "Click to upload"}
-                    </p>
-                    <p className="text-xs text-gray-500">PNG, JPG up to 1MB</p>
-                  </div>
-                  <input 
-                    type="file" 
-                    name="photo" 
-                    className="hidden" 
+                  {documentPreviews.photo ? (
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6 h-full">
+                      <img
+                        src={documentPreviews.photo}
+                        alt="Photo preview"
+                        className="max-h-20 mb-2"
+                      />
+                      <p className="text-xs text-gray-500">Click to change</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                      <p className="mb-1 text-sm text-gray-500">
+                        Click to upload
+                      </p>
+                      <p className="text-xs text-gray-500">PNG, JPG up to 1MB</p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    name="photo"
+                    className="hidden"
                     accept=".jpg,.jpeg,.png"
                     onChange={handleFileChange}
                     required
@@ -429,24 +571,35 @@ export default function AdmissionForm() {
                 </label>
               </div>
             </div>
-            
+
             {/* Only show Matric Marksheet upload if needed */}
-            {showMatricDetails &&  (
+            {showMatricDetails && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Matriculation (10th) Marksheet *</label>
                 <div className="flex items-center justify-center w-full">
                   <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 mb-2 text-gray-500" />
-                      <p className="mb-1 text-sm text-gray-500">
-                        {documents.matricMarksheet ? documents.matricMarksheet.name : "Click to upload"}
-                      </p>
-                      <p className="text-xs text-gray-500">PDF, JPG up to 2MB</p>
-                    </div>
-                    <input 
-                      type="file" 
-                      name="matricMarksheet" 
-                      className="hidden" 
+                    {documentPreviews.matricMarksheet ? (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6 h-full">
+                        <img
+                          src={documentPreviews.matricMarksheet}
+                          alt="Document preview"
+                          className="max-h-20 mb-2"
+                        />
+                        <p className="text-xs text-gray-500">Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                        <p className="mb-1 text-sm text-gray-500">
+                          Click to upload
+                        </p>
+                        <p className="text-xs text-gray-500">PDF, JPG up to 2MB</p>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      name="matricMarksheet"
+                      className="hidden"
                       accept=".pdf,.jpg,.jpeg,.png"
                       onChange={handleFileChange}
                       required={showMatricDetails}
@@ -456,44 +609,66 @@ export default function AdmissionForm() {
               </div>
             )}
             {showInterDetails && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Intermediate (12th) Marksheet *</label>
-              <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-2 text-gray-500" />
-                    <p className="mb-1 text-sm text-gray-500">
-                      {documents.interMarksheet ? documents.interMarksheet.name : "Click to upload"}
-                    </p>
-                    <p className="text-xs text-gray-500">PDF, JPG up to 2MB</p>
-                  </div>
-                  <input 
-                    type="file" 
-                    name="interMarksheet" 
-                    className="hidden" 
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    required
-                  />
-                </label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Intermediate (12th) Marksheet *</label>
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    {documentPreviews.interMarksheet ? (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6 h-full">
+                        <img
+                          src={documentPreviews.interMarksheet}
+                          alt="Document preview"
+                          className="max-h-20 mb-2"
+                        />
+                        <p className="text-xs text-gray-500">Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                        <p className="mb-1 text-sm text-gray-500">
+                          Click to upload
+                        </p>
+                        <p className="text-xs text-gray-500">PDF, JPG up to 2MB</p>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      name="interMarksheet"
+                      className="hidden"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                      required
+                    />
+                  </label>
+                </div>
               </div>
-            </div>
             )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">ID Proof *</label>
               <div className="flex items-center justify-center w-full">
                 <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-2 text-gray-500" />
-                    <p className="mb-1 text-sm text-gray-500">
-                      {documents.idProof ? documents.idProof.name : "Click to upload"}
-                    </p>
-                    <p className="text-xs text-gray-500">PDF, JPG up to 2MB</p>
-                  </div>
-                  <input 
-                    type="file" 
-                    name="idProof" 
-                    className="hidden" 
+                  {documentPreviews.idProof ? (
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6 h-full">
+                      <img
+                        src={documentPreviews.idProof}
+                        alt="Document preview"
+                        className="max-h-20 mb-2"
+                      />
+                      <p className="text-xs text-gray-500">Click to change</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                      <p className="mb-1 text-sm text-gray-500">
+                        Click to upload
+                      </p>
+                      <p className="text-xs text-gray-500">PDF, JPG up to 2MB</p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    name="idProof"
+                    className="hidden"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={handleFileChange}
                     required
@@ -503,15 +678,25 @@ export default function AdmissionForm() {
             </div>
           </div>
         </div>
-        
+
         {/* Submit Button */}
         <div className="flex justify-center">
           <button
             type="submit"
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
+            disabled={loading}
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center disabled:opacity-50"
           >
-            <SendHorizontal className="h-5 w-5 mr-2" />
-            Submit Application
+            {loading ? (
+              <>
+                <Loader className="h-5 w-5 mr-2 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <SendHorizontal className="h-5 w-5 mr-2" />
+                Submit Application
+              </>
+            )}
           </button>
         </div>
       </form>

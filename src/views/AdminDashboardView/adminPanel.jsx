@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Home, Users, FileText, Menu, X, Bell, Search } from 'lucide-react';
+import { Home, Users, FileText, Menu, X, Bell, Search, Clock, CheckCircle, BookOpen, Building2, Newspaper, GraduationCap, School } from 'lucide-react';
 import { db } from '../../config/firebase';
-import { 
-  collection, 
-  getDocs, 
+import {
+  collection,
+  getDocs,
   deleteDoc,
-  doc, 
+  doc,
   getDoc,
-  query, 
-  orderBy, 
+  query,
+  orderBy,
   limit,
   where,
   updateDoc
@@ -16,6 +16,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import axios from 'axios';
+import Applications from './components/Applications';
+import AcademicUpdate from './components/AcademicUpdate';
+import FacilityUpdate from './components/FacilityUpdate';
+import NewsEventUpdate from './components/NewsEventUpdate';
+import StudentPortalUpdate from './components/StudentPortalUpdate';
+import AdmissionUpdate from './components/AdmissionUpdate';
 
 export default function AdminPanel() {
   const [activeSection, setActiveSection] = useState('home');
@@ -23,14 +29,14 @@ export default function AdminPanel() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [adminData, setAdminData] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const auth = getAuth();
-    
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        // Clear session storage
         sessionStorage.removeItem('isAuthenticated');
         sessionStorage.removeItem('userRole');
         sessionStorage.removeItem('userId');
@@ -39,17 +45,11 @@ export default function AdminPanel() {
       }
 
       try {
-        const studentsQuery = query(
-          collection(db, 'students'),
-          where('uid', '==', user.uid),
-          where('role', '==', 'admin')
-        );
-        
-        const querySnapshot = await getDocs(studentsQuery);
-        
-        if (querySnapshot.empty) {
+        const adminDocRef = doc(db, 'students', user.uid);
+        const adminDocSnap = await getDoc(adminDocRef);
+
+        if (!adminDocSnap.exists() || adminDocSnap.data().role !== 'admin') {
           console.error('User is not an admin');
-          // Clear session storage
           sessionStorage.removeItem('isAuthenticated');
           sessionStorage.removeItem('userRole');
           sessionStorage.removeItem('userId');
@@ -57,7 +57,7 @@ export default function AdminPanel() {
           return;
         }
 
-        const adminData = querySnapshot.docs[0].data();
+        const adminData = adminDocSnap.data();
         setAdminData(adminData);
         setIsAdmin(true);
       } catch (error) {
@@ -87,14 +87,56 @@ export default function AdminPanel() {
     setSidebarOpen(!sidebarOpen);
   };
 
+  const handleSearch = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+  };
+
+  const filterData = (data) => {
+    if (!searchQuery) return data;
+
+    if (Array.isArray(data)) {
+      return data.filter(item => {
+        const searchableFields = Object.values(item).map(val => 
+          val?.toString().toLowerCase() || ''
+        );
+        return searchableFields.some(field => field.includes(searchQuery));
+      });
+    }
+    
+    if (data.recentActivity) {
+      return {
+        ...data,
+        recentActivity: data.recentActivity.filter(activity =>
+          activity.firstName?.toLowerCase().includes(searchQuery) ||
+          activity.lastName?.toLowerCase().includes(searchQuery) ||
+          activity.course?.toLowerCase().includes(searchQuery) ||
+          activity.status?.toLowerCase().includes(searchQuery)
+        )
+      };
+    }
+
+    return data;
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case 'home':
         return <HomePage />;
       case 'students':
-        return <StudentsRecord />;
+        return <StudentsRecord filterData={filterData} />;
       case 'applications':
-        return <Applications />;
+        return <Applications filterData={filterData} />;
+      case 'academic':
+        return <AcademicUpdate />;
+      case 'facility':
+        return <FacilityUpdate />;
+      case 'newsEvent':
+        return <NewsEventUpdate />;
+      case 'studentPortal':
+        return <StudentPortalUpdate />;
+      case 'admission':
+        return <AdmissionUpdate />;
       default:
         return <HomePage />;
     }
@@ -118,9 +160,7 @@ export default function AdminPanel() {
             <li>
               <button
                 onClick={() => setActiveSection('home')}
-                className={`flex items-center p-3 rounded-lg w-full ${
-                  activeSection === 'home' ? 'bg-yellow text-black' : 'hover:bg-gray-800'
-                }`}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'home' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
               >
                 <Home size={20} />
                 {sidebarOpen && <span className="ml-4">Homepage</span>}
@@ -129,9 +169,7 @@ export default function AdminPanel() {
             <li>
               <button
                 onClick={() => setActiveSection('students')}
-                className={`flex items-center p-3 rounded-lg w-full ${
-                  activeSection === 'students' ? 'bg-yellow text-black' : 'hover:bg-gray-800'
-                }`}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'students' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
               >
                 <Users size={20} />
                 {sidebarOpen && <span className="ml-4">Students Record</span>}
@@ -140,12 +178,55 @@ export default function AdminPanel() {
             <li>
               <button
                 onClick={() => setActiveSection('applications')}
-                className={`flex items-center p-3 rounded-lg w-full ${
-                  activeSection === 'applications' ? 'bg-yellow text-black' : 'hover:bg-gray-800'
-                }`}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'applications' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
               >
                 <FileText size={20} />
                 {sidebarOpen && <span className="ml-4">Applications</span>}
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveSection('academic')}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'academic' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
+              >
+                <BookOpen size={20} />
+                {sidebarOpen && <span className="ml-4">Academic</span>}
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveSection('facility')}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'facility' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
+              >
+                <Building2 size={20} />
+                {sidebarOpen && <span className="ml-4">Facilities</span>}
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveSection('newsEvent')}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'newsEvent' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
+              >
+                <Newspaper size={20} />
+                {sidebarOpen && <span className="ml-4">News & Events</span>}
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveSection('studentPortal')}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'studentPortal' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
+              >
+                <GraduationCap size={20} />
+                {sidebarOpen && <span className="ml-4">Student Portal</span>}
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveSection('admission')}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'admission' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
+              >
+                <School size={20} />
+                {sidebarOpen && <span className="ml-4">Admission</span>}
               </button>
             </li>
           </ul>
@@ -166,16 +247,14 @@ export default function AdminPanel() {
                   <p className="text-xs text-gray-400">{adminData?.email}</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={async () => {
                   try {
                     const auth = getAuth();
                     await signOut(auth);
-                    // Clear session storage
                     sessionStorage.removeItem('isAuthenticated');
                     sessionStorage.removeItem('userRole');
                     sessionStorage.removeItem('userId');
-                    // Navigate to home page
                     navigate('/', { replace: true });
                   } catch (error) {
                     console.error('Error signing out:', error);
@@ -202,10 +281,20 @@ export default function AdminPanel() {
               <div className="relative">
                 <input
                   type="text"
-                  className="pl-9 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className="pl-9 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-64"
+                  placeholder={`Search in ${activeSection}...`}
                 />
                 <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
               </div>
               <button className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 relative">
                 <Bell size={20} />
@@ -227,72 +316,181 @@ export default function AdminPanel() {
 function HomePage() {
   const [stats, setStats] = useState({
     totalStudents: 0,
-    newApplications: 0,
+    totalAdmissions: 0,
     pendingApprovals: 0,
+    approvedAdmissions: 0,
     recentActivity: []
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const auth = getAuth();
-        if (!auth.currentUser) return;
+        setLoading(true);
+        setError(null);
 
-        // Get total students
+        // Fetch students count from Firebase
         const studentsQuery = query(collection(db, "students"));
         const studentsSnapshot = await getDocs(studentsQuery);
         const totalStudents = studentsSnapshot.size;
 
-        setStats(prevStats => ({
-          ...prevStats,
-          totalStudents
-        }));
+        // Fetch admission statistics
+        const admissionStatsResponse = await axios.get('http://localhost:8000/api/admissions/stats');
+        const admissionStats = admissionStatsResponse.data.data;
 
+        setStats({
+          totalStudents: totalStudents,
+          totalAdmissions: admissionStats.total || 0,
+          pendingApprovals: admissionStats.pending || 0,
+          approvedAdmissions: admissionStats.approved || 0,
+          recentActivity: admissionStats.recent || []
+        });
       } catch (error) {
-        console.error("Error fetching stats:", error);
+        console.error('Error fetching dashboard data:', error);
+        setError('Failed to load dashboard data. Please try again later.');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchStats();
+    fetchData();
   }, []);
+
+  const filteredActivity = stats.recentActivity.filter(activity => {
+    if (!searchQuery) return true;
+    
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      activity.firstName?.toLowerCase().includes(searchLower) ||
+      activity.lastName?.toLowerCase().includes(searchLower) ||
+      activity.course?.toLowerCase().includes(searchLower) ||
+      activity.status?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    return new Date(date).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-xl">Loading dashboard data...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total Students" value={stats.totalStudents} icon={<Users size={24} />} color="bg-yellow" />
-        <StatCard title="New Applications" value={stats.newApplications} icon={<FileText size={24} />} color="bg-black" />
-        <StatCard title="Pending Approvals" value={stats.pendingApprovals} icon={<Bell size={24} />} color="bg-gray" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard 
+          title="Total Students" 
+          value={stats.totalStudents} 
+          icon={<Users size={24} />} 
+          color="bg-purple-500" 
+        />
+        <StatCard 
+          title="Total Admissions" 
+          value={stats.totalAdmissions} 
+          icon={<FileText size={24} />} 
+          color="bg-blue-500" 
+        />
+        <StatCard 
+          title="Pending Approvals" 
+          value={stats.pendingApprovals} 
+          icon={<Clock size={24} />} 
+          color="bg-yellow-500" 
+        />
+        <StatCard 
+          title="Approved Admissions" 
+          value={stats.approvedAdmissions} 
+          icon={<CheckCircle size={24} />} 
+          color="bg-green-500" 
+        />
       </div>
-      
+
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-medium mb-4">Recent Activity</h3>
+        <h3 className="text-lg font-medium mb-4">
+          Recent Applications
+          {searchQuery && ` (${filteredActivity.length} matches)`}
+        </h3>
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+            {error}
+          </div>
+        )}
         <div className="space-y-4">
-          {stats.recentActivity.map((activity) => (
-            <div key={activity.id} className="flex items-center border-b border-gray-200 pb-3">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                <Users size={16} />
+          {filteredActivity.length === 0 ? (
+            <p className="text-gray-500 text-center py-4">
+              {searchQuery ? 'No matching applications found' : 'No recent applications found'}
+            </p>
+          ) : (
+            filteredActivity.map((activity) => (
+              <div key={activity._id} className="flex items-center border-b border-gray-200 pb-3">
+                <div className={`w-10 h-10 rounded-full ${getStatusColor(activity.status)} flex items-center justify-center mr-3`}>
+                  <FileText size={16} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-medium">
+                    {activity.firstName} {activity.lastName} - {activity.course.toUpperCase()}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Status: <span className={getStatusTextColor(activity.status)}>{activity.status}</span>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {formatDate(activity.createdAt)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium">{activity.type} - {activity.student}</p>
-                <p className="text-sm text-gray-500">
-                  {activity.timestamp?.toLocaleString() || 'Recent'}
-                </p>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function StudentsRecord() {
+function getStatusColor(status) {
+  switch (status?.toLowerCase()) {
+    case 'approved':
+      return 'bg-green-500';
+    case 'rejected':
+      return 'bg-red-500';
+    case 'pending':
+    default:
+      return 'bg-yellow-500';
+  }
+}
+
+function getStatusTextColor(status) {
+  switch (status?.toLowerCase()) {
+    case 'approved':
+      return 'text-green-600';
+    case 'rejected':
+      return 'text-red-600';
+    case 'pending':
+    default:
+      return 'text-yellow-600';
+  }
+}
+
+function StudentsRecord({ filterData }) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const studentsPerPage = 7;
   const [editingStudent, setEditingStudent] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -315,28 +513,39 @@ function StudentsRecord() {
     fetchStudents();
   }, []);
 
+  const filteredStudents = students.filter(student => {
+    if (!searchQuery) return true;
+    
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      student.name?.toLowerCase().includes(searchLower) ||
+      student.email?.toLowerCase().includes(searchLower) ||
+      student.rollNumber?.toLowerCase().includes(searchLower) ||
+      student.class?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
+  const paginatedStudents = filteredStudents.slice(
+    (page - 1) * studentsPerPage,
+    page * studentsPerPage
+  );
+
   const handleDelete = async (studentId) => {
     if (!window.confirm('Are you sure you want to delete this student?')) return;
-    
+
     try {
       const auth = getAuth();
       if (!auth.currentUser) {
         throw new Error('Not authenticated');
       }
 
-      // First check if user is admin
-      const adminQuery = query(
-        collection(db, 'students'),
-        where('uid', '==', auth.currentUser.uid)
-      );
-      
-      const adminSnapshot = await getDocs(adminQuery);
-      if (!adminSnapshot.empty && adminSnapshot.docs[0].data().role === 'admin') {
-        // Delete the student document
+      const adminDocRef = doc(db, 'students', auth.currentUser.uid);
+      const adminDocSnap = await getDoc(adminDocRef);
+
+      if (adminDocSnap.exists() && adminDocSnap.data().role === 'admin') {
         await deleteDoc(doc(db, "students", studentId));
-        
-        // Update local state
-        setStudents(prevStudents => 
+        setStudents(prevStudents =>
           prevStudents.filter(student => student.id !== studentId)
         );
         alert('Student deleted successfully');
@@ -360,35 +569,27 @@ function StudentsRecord() {
         throw new Error('Not authenticated');
       }
 
-      // First check if user is admin
-      const adminQuery = query(
-        collection(db, 'students'),
-        where('uid', '==', auth.currentUser.uid)
-      );
-      
-      const adminSnapshot = await getDocs(adminQuery);
-      if (!adminSnapshot.empty && adminSnapshot.docs[0].data().role === 'admin') {
-        // Get current student data to preserve sensitive fields
+      const adminDocRef = doc(db, 'students', auth.currentUser.uid);
+      const adminDocSnap = await getDoc(adminDocRef);
+
+      if (adminDocSnap.exists() && adminDocSnap.data().role === 'admin') {
         const studentDoc = await getDoc(doc(db, "students", editingStudent.id));
         const currentData = studentDoc.data();
 
-        // Prepare update data (allow role update)
         const updateData = {
-          ...currentData,          // Keep existing data
+          ...currentData,
           name: updatedData.name,
           email: updatedData.email,
           class: updatedData.class,
           rollNumber: updatedData.rollNumber,
           imageUrl: updatedData.imageUrl || currentData.imageUrl,
-          role: updatedData.role, // allow role update
+          role: updatedData.role,
           updatedAt: new Date(),
           updatedBy: auth.currentUser.uid
         };
 
-        // Update the document
         await updateDoc(doc(db, "students", editingStudent.id), updateData);
-        
-        // Update local state
+
         setStudents(prevStudents =>
           prevStudents.map(student =>
             student.id === editingStudent.id
@@ -407,12 +608,6 @@ function StudentsRecord() {
       alert('Failed to update student: ' + error.message);
     }
   };
-
-  const totalPages = Math.ceil(students.length / studentsPerPage);
-  const paginatedStudents = students.slice(
-    (page - 1) * studentsPerPage,
-    page * studentsPerPage
-  );
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
@@ -440,8 +635,8 @@ function StudentsRecord() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm">{student.class}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {student.imageUrl ? (
-                    <img 
-                      src={student.imageUrl} 
+                    <img
+                      src={student.imageUrl}
                       alt={student.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
@@ -452,14 +647,14 @@ function StudentsRecord() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                  <button 
+                  <button
                     onClick={() => handleEdit(student)}
                     className="px-3 py-1 bg-black text-white rounded hover:bg-gray-800"
                   >
                     Edit
                   </button>
-                  <button 
-                    onClick={() => handleDelete(student.id)} // Use document ID instead of uid
+                  <button
+                    onClick={() => handleDelete(student.id)}
                     className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                   >
                     Delete
@@ -471,9 +666,12 @@ function StudentsRecord() {
         </table>
       </div>
       <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-        <p className="text-sm text-gray-500">Showing {paginatedStudents.length} of {students.length} students</p>
+        <p className="text-sm text-gray-500">
+          Showing {paginatedStudents.length} of {filteredStudents.length} students
+          {searchQuery && ` (filtered from ${students.length} total)`}
+        </p>
         <div className="flex space-x-1">
-          <button 
+          <button
             className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
             onClick={() => setPage(page => Math.max(page - 1, 1))}
             disabled={page === 1}
@@ -481,15 +679,15 @@ function StudentsRecord() {
             Previous
           </button>
           {[...Array(totalPages)].map((_, index) => (
-            <button 
-              key={index} 
+            <button
+              key={index}
               className={`px-3 py-1 ${page === index + 1 ? 'bg-yellow' : 'bg-gray-200'} rounded hover:bg-yellow-600`}
               onClick={() => setPage(index + 1)}
             >
               {index + 1}
             </button>
           ))}
-          <button 
+          <button
             className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
             onClick={() => setPage(page => Math.min(page + 1, totalPages))}
             disabled={page === totalPages}
@@ -505,154 +703,6 @@ function StudentsRecord() {
           onUpdate={handleUpdate}
         />
       )}
-    </div>
-  );
-}
-
-function Applications() {
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ type: 'All Types', status: 'All Status' });
-
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "applications"));
-        const applicationsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          date: doc.data().createdAt?.toDate().toLocaleDateString()
-        }));
-        setApplications(applicationsData);
-      } catch (error) {
-        console.error("Error fetching applications:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchApplications();
-  }, []);
-
-  const filteredApplications = applications.filter(app => {
-    const typeMatch = filters.type === 'All Types' || app.type === filters.type;
-    const statusMatch = filters.status === 'All Status' || app.status === filters.status;
-    return typeMatch && statusMatch;
-  });
-
-  const handleFilterChange = (e) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  if (loading) return <div>Loading...</div>;
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-medium">Applications Overview</h3>
-        </div>
-        <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatusCard title="Total" count="124" color="bg-black" />
-          <StatusCard title="Pending" count="42" color="bg-yellow" />
-          <StatusCard title="Approved" count="65" color="bg-green-500" />
-          <StatusCard title="Rejected" count="17" color="bg-red-500" />
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 flex justify-between items-center border-b border-gray-200">
-          <h3 className="text-lg font-medium">Recent Applications</h3>
-          <div className="flex space-x-2">
-            <select name="type" value={filters.type} onChange={handleFilterChange} className="border rounded px-3 py-1 bg-white">
-              <option>All Types</option>
-              <option>Admission</option>
-              <option>Scholarship</option>
-              <option>Transfer</option>
-            </select>
-            <select name="status" value={filters.status} onChange={handleFilterChange} className="border rounded px-3 py-1 bg-white">
-              <option>All Status</option>
-              <option>Pending</option>
-              <option>Approved</option>
-              <option>Rejected</option>
-            </select>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredApplications.map((app) => (
-                <tr key={app.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{app.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{app.student}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{app.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{app.date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      app.status === 'Approved' ? 'bg-green-100 text-green-800' :
-                      app.status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {app.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button className="px-3 py-1 bg-black text-white rounded hover:bg-gray-800">Review</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-          <p className="text-sm text-gray-500">Showing 5 of 124 applications</p>
-          <div className="flex space-x-1">
-            <button className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</button>
-            <button className="px-3 py-1 bg-yellow rounded hover:bg-yellow-600">1</button>
-            <button className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">2</button>
-            <button className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">3</button>
-            <button className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ title, value, icon, color }) {
-  return (
-    <div className="bg-white rounded-lg shadow p-6 flex items-center">
-      <div className={`${color} rounded-lg p-4 text-white mr-4`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">{title}</p>
-        <p className="text-2xl font-bold">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function StatusCard({ title, count, color }) {
-  return (
-    <div className="bg-gray-50 rounded-lg p-4 flex items-center">
-      <div className={`w-12 h-12 ${color} rounded-lg flex items-center justify-center text-white mr-4`}>
-        {count}
-      </div>
-      <p className="font-medium">{title}</p>
     </div>
   );
 }
@@ -675,17 +725,15 @@ function StudentEditModal({ student, onClose, onUpdate }) {
     if (!file) return;
 
     try {
-      // Validate image
-      if (file.size > 5000000) { // 5MB
+      if (file.size > 5000000) {
         throw new Error('File size must be less than 5MB');
       }
-      
+
       const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
       if (!allowedTypes.includes(file.type)) {
         throw new Error('File must be JPG, PNG or JPEG');
       }
 
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result);
@@ -709,7 +757,6 @@ function StudentEditModal({ student, onClose, onUpdate }) {
       let updatedData = { ...formData };
       delete updatedData.studentImage;
 
-      // If new image is selected, upload it
       if (formData.studentImage) {
         const imageFormData = new FormData();
         imageFormData.append('file', formData.studentImage);
@@ -739,15 +786,14 @@ function StudentEditModal({ student, onClose, onUpdate }) {
         <h2 className="text-xl font-bold mb-4">Edit Student</h2>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {/* Image Upload Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Profile Image</label>
               <div className="mt-2 flex items-center space-x-4">
                 <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100">
                   {previewImage ? (
-                    <img 
-                      src={previewImage} 
-                      alt="Preview" 
+                    <img
+                      src={previewImage}
+                      alt="Preview"
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -765,13 +811,12 @@ function StudentEditModal({ student, onClose, onUpdate }) {
               </div>
             </div>
 
-            {/* Other Fields */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Name</label>
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="mt-1 w-full px-3 py-2 border rounded-md"
                 required
               />
@@ -781,7 +826,7 @@ function StudentEditModal({ student, onClose, onUpdate }) {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="mt-1 w-full px-3 py-2 border rounded-md"
                 required
               />
@@ -791,7 +836,7 @@ function StudentEditModal({ student, onClose, onUpdate }) {
               <input
                 type="text"
                 value={formData.class}
-                onChange={(e) => setFormData({...formData, class: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, class: e.target.value })}
                 className="mt-1 w-full px-3 py-2 border rounded-md"
                 required
               />
@@ -801,7 +846,7 @@ function StudentEditModal({ student, onClose, onUpdate }) {
               <input
                 type="text"
                 value={formData.rollNumber}
-                onChange={(e) => setFormData({...formData, rollNumber: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, rollNumber: e.target.value })}
                 className="mt-1 w-full px-3 py-2 border rounded-md"
                 required
               />
@@ -837,6 +882,20 @@ function StudentEditModal({ student, onClose, onUpdate }) {
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value, icon, color }) {
+  return (
+    <div className="bg-white rounded-lg shadow p-6 flex items-center">
+      <div className={`${color} rounded-lg p-4 text-white mr-4`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm text-gray-500">{title}</p>
+        <p className="text-2xl font-bold">{value}</p>
       </div>
     </div>
   );

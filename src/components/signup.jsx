@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../config/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import axios from 'axios';
 import { CLOUDINARY_CONFIG } from '../config/cloudinary';
@@ -12,13 +12,13 @@ const validateImage = (file) => {
   if (file.size > CLOUDINARY_CONFIG.MAX_FILE_SIZE) {
     throw new Error('File size must be less than 5MB');
   }
-  
+
   // Check file type
   const fileType = file.type.split('/')[1];
   if (!CLOUDINARY_CONFIG.ALLOWED_FORMATS.includes(fileType)) {
     throw new Error('File must be JPG, PNG or JPEG');
   }
-  
+
   return true;
 };
 
@@ -74,7 +74,7 @@ export default function SignupPage() {
         imageFormData.append('file', formData.studentImage);
         imageFormData.append('upload_preset', CLOUDINARY_CONFIG.UPLOAD_PRESET);
         imageFormData.append('folder', CLOUDINARY_CONFIG.FOLDER);
-        
+
         const response = await axios.post(
           CLOUDINARY_CONFIG.API_URL,
           imageFormData
@@ -82,8 +82,8 @@ export default function SignupPage() {
         imageUrl = response.data.secure_url;
       }
 
-      // Add user to Firestore without storing password
-      await addDoc(collection(db, "students"), {
+      // Use setDoc with user UID as the document ID to match security rules
+      await setDoc(doc(db, "students", userCredential.user.uid), {
         uid: userCredential.user.uid,
         email: formData.email,
         name: formData.name,
@@ -109,10 +109,10 @@ export default function SignupPage() {
       <div className="w-96 h-[600px] bg-gray rounded-[20px] flex items-center justify-center">
         <img src={collegelogo} alt="Logo" className="h-[400px] object-contain" />
       </div>
-      
+
       <div className="w-96 font-jakarta h-[600px] p-8 border-black border-8 rounded-[10px] rounded-l-none border-l-0 flex flex-col justify-center bg-gray">
         <h2 className="text-2xl font-bold text-center mb-8">Welcome to Signup</h2>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <input
