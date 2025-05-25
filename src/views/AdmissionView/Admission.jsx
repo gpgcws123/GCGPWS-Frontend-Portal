@@ -1,105 +1,78 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
+import ImageCard from '../../components/imageCard';
+import ContentSection from '../../components/contextSection';
+import axios from 'axios';
 import HeadingTitle from "../../components/heading";
 import SimpleCard from "../../components/simpleCard";
 import Button from "../../components/button";
 import { FaUsers, FaCalendarAlt, FaClock } from "react-icons/fa"; 
-
-// ✅ Admission Images
-import Computer from "../../assets/computer.jpg";
-import Math from "../../assets/math.jpg";
-import Engneering from "../../assets/enginereing.jpg";
 import HeadingWithButton from "../../components/headingWithButton";
 
+const BACKEND_URL = 'http://localhost:8000';
+
 const AdmissionSection = () => {
-  const admissionData = [
-    {
-      title: "BS Computer Science",
-      image: Computer,
-      link: "/admission-details",
-      seats: "56 seats",
-      date: "16 August, 2024",
-      duration: "4 years",
-    },
-    {
-      title: "BSC Math",
-      image: Math,
-      link: "/admission-details",
-      seats: "60 seats",
-      date: "20 August, 2024",
-      duration: "4 years",
-    },
-    {
-      title: "Fsc Pre Engineering",
-      image: Engneering,
-      link: "/admission-details",
-      seats: "50 seats",
-      date: "18 August, 2024",
-      duration: "4 years",
-    },
-  ];
+    const [admissionData, setAdmissionData] = useState({
+        title: "Admissions",
+        description: "Join our prestigious institution for quality education and personal growth. Our admission process is designed to be transparent and student-friendly. We welcome talented students who are eager to learn and excel in their chosen fields.",
+        imageUrl: "/images/admission-default.jpg"
+    });
+    const [loading, setLoading] = useState(true);
 
-  return (
-    <div className="bg-white h-auto flex flex-col items-center px-8 py-16 text-black relative w-auto">
-      {/* ✅ Heading */}
-      <div className="w-full flex items-center justify-center relative mb-12">
-        <HeadingTitle title="Admissions Open" width="320px" />
-      </div>
-      <HeadingWithButton headingText="Available Programs" width="auto" buttonText="View All Programs" to="/admisson/alladmisson" />
+    useEffect(() => {
+        const fetchAdmissionData = async () => {
+            try {
+                const response = await axios.get(`${BACKEND_URL}/api/admissions`);
+                if (response.data && response.data.data) {
+                    const data = Array.isArray(response.data.data) 
+                        ? response.data.data[0] 
+                        : response.data.data;
+                    
+                    if (data && data.status === 'active') {
+                        setAdmissionData({
+                            title: data.title || admissionData.title,
+                            description: data.description || admissionData.description,
+                            imageUrl: data.images && data.images[0] ? `${BACKEND_URL}${data.images[0]}` : admissionData.imageUrl
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching admission data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-      {/* ✅ Simple Cards Layout (No Swiper) */}
-      <div className="w-full flex flex-wrap justify-between gap-10">
-        {admissionData.map((program, index) => (
-          <SimpleCard
-          bgColor="bg-gray"
-            key={index}
-            boxShadow={false}
-            width="w-[400px]"
-            height="h-[500px]"
-            className="!p-0 flex flex-col justify-between rounded-[10px]"
-          >
-            <div className="relative w-full h-[250px] ">
-              <img
-                src={program.image}
-                alt={program.title}
-                className="w-full h-full object-cover rounded-t-[10px]"
-              />
+        fetchAdmissionData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="w-full h-screen flex items-center justify-center">
+                <div className="text-xl">Loading...</div>
             </div>
+        );
+    }
 
-            {/* ✅ Information Section with Border around Each Icon */}
-            <div className=" p-4 border-b-2  flex justify-between items-center bg-gray-200 text-black text-sm font-semibold">
-              <div className="flex items-center gap-2">
-                <span className="border border-black p-2 rounded-md"><FaUsers /></span> {program.seats}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="border border-black p-2 rounded-md"><FaCalendarAlt /></span> {program.date}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="border border-black p-2 rounded-md"><FaClock /></span> {program.duration}
-              </div>
+    return (
+        <div className="w-full min-h-screen flex items-center justify-center bg-white">
+            <div className="flex flex-col md:flex-row items-center justify-between max-w-[1350px] w-full p-8 gap-8">
+                <div className="md:w-1/2">
+                    <ContentSection 
+                        title={admissionData.title}
+                        description={admissionData.description}
+                    />
+                </div>
+                <div className="md:w-1/2 flex justify-center">
+                    <ImageCard 
+                        src={admissionData.imageUrl}
+                        width="580px"
+                        height="460px"
+                        alt="Admissions"
+                    />
+                </div>
             </div>
-
-            <div className="p-6 text-center flex-grow">
-              <h2 className="text-[26px] font-jakarta font-semibold leading-8 mb-6">
-                {program.title}
-              </h2>
-            </div>
-
-            <div className=" flex justify-center">
-              <Button
-                rounded="rounded-none"
-                height="43px"
-                width="400px"
-                className="px-8 bg-yellow-400"
-                boxShadow={false}
-                title="Apply Online Now"
-                to='/admission/admissionform'
-              />
-            </div>
-          </SimpleCard>
-        ))}
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default AdmissionSection;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Home, Users, FileText, Menu, X, Bell, Search, Clock, CheckCircle, BookOpen, Building2, Newspaper, GraduationCap, School } from 'lucide-react';
+import { Home, Users, FileText, Menu, X, Bell, Search, Clock, CheckCircle, BookOpen, Building2, Newspaper, GraduationCap, School, Music } from 'lucide-react';
 import { db } from '../../config/firebase';
 import {
   collection,
@@ -20,6 +20,7 @@ import Applications from './components/Applications';
 import AcademicUpdate from './components/AcademicUpdate';
 import FacilityUpdate from './components/FacilityUpdate';
 import NewsEventUpdate from './components/NewsEventUpdate';
+import CulturalUpdate from './components/CulturalUpdate';
 import StudentPortalUpdate from './components/StudentPortalUpdate';
 import AdmissionUpdate from './components/AdmissionUpdate';
 
@@ -133,6 +134,8 @@ export default function AdminPanel() {
         return <FacilityUpdate />;
       case 'newsEvent':
         return <NewsEventUpdate />;
+      case 'cultural':
+        return <CulturalUpdate />;
       case 'studentPortal':
         return <StudentPortalUpdate />;
       case 'admission':
@@ -209,6 +212,15 @@ export default function AdminPanel() {
               >
                 <Newspaper size={20} />
                 {sidebarOpen && <span className="ml-4">News & Events</span>}
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveSection('cultural')}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'cultural' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
+              >
+                <Music size={20} />
+                {sidebarOpen && <span className="ml-4">Cultural</span>}
               </button>
             </li>
             <li>

@@ -8,10 +8,9 @@ import { toast } from 'react-toastify';
 
 const BACKEND_URL = 'http://localhost:8000';
 
-const NewsEventUpdate = () => {
+const CulturalUpdate = () => {
     const [data, setData] = useState({
-        news: [],
-        events: []
+        activities: []
     });
     const [loading, setLoading] = useState(true);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -19,11 +18,12 @@ const NewsEventUpdate = () => {
         title: '',
         description: '',
         content: '', // For TinyMCE content
-        type: 'news',
+        category: '',
         date: '',
-        venue: '', // For events
-        time: '', // For events
-        organizer: '', // For events
+        venue: '',
+        time: '',
+        participants: '',
+        organizer: '',
         status: 'active'
     });
 
@@ -33,14 +33,9 @@ const NewsEventUpdate = () => {
 
     const fetchData = async () => {
         try {
-            const [newsRes, eventsRes] = await Promise.all([
-                axios.get(`${BACKEND_URL}/api/news/list`),
-                axios.get(`${BACKEND_URL}/api/events/list`)
-            ]);
-
+            const response = await axios.get(`${BACKEND_URL}/api/cultural/list`);
             setData({
-                news: newsRes.data?.data || [],
-                events: eventsRes.data?.data || []
+                activities: response.data?.data || []
             });
         } catch (err) {
             console.error('Error fetching data:', err);
@@ -67,31 +62,29 @@ const NewsEventUpdate = () => {
                 formDataToSend.append('image', selectedFile);
             }
 
-            const endpoint = formData.type === 'news' ? 'news' : 'events';
-            await axios.post(`${BACKEND_URL}/api/${endpoint}/create`, formDataToSend);
+            await axios.post(`${BACKEND_URL}/api/cultural/create`, formDataToSend);
 
-            toast.success(`${formData.type === 'news' ? 'News' : 'Event'} created successfully`);
+            toast.success('Cultural activity created successfully');
             fetchData();
             resetForm();
         } catch (err) {
-            console.error('Error creating item:', err);
-            toast.error('Failed to create item');
+            console.error('Error creating cultural activity:', err);
+            toast.error('Failed to create cultural activity');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDelete = async (id, type) => {
-        if (!window.confirm('Are you sure you want to delete this item?')) return;
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this activity?')) return;
 
         try {
-            const endpoint = type === 'news' ? 'news' : 'events';
-            await axios.delete(`${BACKEND_URL}/api/${endpoint}/${id}`);
-            toast.success('Item deleted successfully');
+            await axios.delete(`${BACKEND_URL}/api/cultural/${id}`);
+            toast.success('Activity deleted successfully');
             fetchData();
         } catch (err) {
-            console.error('Error deleting item:', err);
-            toast.error('Failed to delete item');
+            console.error('Error deleting activity:', err);
+            toast.error('Failed to delete activity');
         }
     };
 
@@ -100,10 +93,11 @@ const NewsEventUpdate = () => {
             title: '',
             description: '',
             content: '',
-            type: 'news',
+            category: '',
             date: '',
             venue: '',
             time: '',
+            participants: '',
             organizer: '',
             status: 'active'
         });
@@ -114,7 +108,7 @@ const NewsEventUpdate = () => {
 
     return (
         <div className="p-6">
-            <Heading title="News & Events Management" className="mb-8" />
+            <Heading title="Cultural Activities Management" className="mb-8" />
 
             {/* Add Form */}
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg mb-8">
@@ -130,14 +124,19 @@ const NewsEventUpdate = () => {
                         />
                     </div>
                     <div>
-                        <label className="block mb-2">Type</label>
+                        <label className="block mb-2">Category</label>
                         <select
-                            value={formData.type}
-                            onChange={(e) => setFormData({...formData, type: e.target.value})}
+                            value={formData.category}
+                            onChange={(e) => setFormData({...formData, category: e.target.value})}
                             className="w-full p-2 border rounded"
+                            required
                         >
-                            <option value="news">News</option>
-                            <option value="event">Event</option>
+                            <option value="">Select Category</option>
+                            <option value="dance">Dance</option>
+                            <option value="music">Music</option>
+                            <option value="drama">Drama</option>
+                            <option value="art">Art</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                     <div>
@@ -150,40 +149,47 @@ const NewsEventUpdate = () => {
                             required
                         />
                     </div>
-                    {formData.type === 'event' && (
-                        <>
-                            <div>
-                                <label className="block mb-2">Time</label>
-                                <input
-                                    type="time"
-                                    value={formData.time}
-                                    onChange={(e) => setFormData({...formData, time: e.target.value})}
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block mb-2">Venue</label>
-                                <input
-                                    type="text"
-                                    value={formData.venue}
-                                    onChange={(e) => setFormData({...formData, venue: e.target.value})}
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block mb-2">Organizer</label>
-                                <input
-                                    type="text"
-                                    value={formData.organizer}
-                                    onChange={(e) => setFormData({...formData, organizer: e.target.value})}
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                        </>
-                    )}
+                    <div>
+                        <label className="block mb-2">Time</label>
+                        <input
+                            type="time"
+                            value={formData.time}
+                            onChange={(e) => setFormData({...formData, time: e.target.value})}
+                            className="w-full p-2 border rounded"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2">Venue</label>
+                        <input
+                            type="text"
+                            value={formData.venue}
+                            onChange={(e) => setFormData({...formData, venue: e.target.value})}
+                            className="w-full p-2 border rounded"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2">Organizer</label>
+                        <input
+                            type="text"
+                            value={formData.organizer}
+                            onChange={(e) => setFormData({...formData, organizer: e.target.value})}
+                            className="w-full p-2 border rounded"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2">Participants</label>
+                        <input
+                            type="text"
+                            value={formData.participants}
+                            onChange={(e) => setFormData({...formData, participants: e.target.value})}
+                            className="w-full p-2 border rounded"
+                            placeholder="Enter participants (comma separated)"
+                            required
+                        />
+                    </div>
                     <div>
                         <label className="block mb-2">Image</label>
                         <input
@@ -245,39 +251,11 @@ const NewsEventUpdate = () => {
                 />
             </form>
 
-            {/* News List */}
-            <div className="mb-8">
-                <h2 className="text-2xl font-bold mb-4">News</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {data.news.map((item) => (
-                        <Card key={item._id} className="bg-white shadow-lg">
-                            <img
-                                src={`${BACKEND_URL}${item.imageUrl}`}
-                                alt={item.title}
-                                className="w-full h-48 object-cover"
-                            />
-                            <div className="p-4">
-                                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                                <p className="text-gray-600 mb-4">{item.description}</p>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-500">{new Date(item.date).toLocaleDateString()}</span>
-                                    <Button
-                                        title="Delete"
-                                        onClick={() => handleDelete(item._id, 'news')}
-                                        className="bg-red-500 hover:bg-red-600"
-                                    />
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            </div>
-
-            {/* Events List */}
+            {/* Cultural Activities List */}
             <div>
-                <h2 className="text-2xl font-bold mb-4">Events</h2>
+                <h2 className="text-2xl font-bold mb-4">Cultural Activities</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {data.events.map((item) => (
+                    {data.activities.map((item) => (
                         <Card key={item._id} className="bg-white shadow-lg">
                             <img
                                 src={`${BACKEND_URL}${item.imageUrl}`}
@@ -286,17 +264,19 @@ const NewsEventUpdate = () => {
                             />
                             <div className="p-4">
                                 <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                                <p className="text-gray-600 mb-4">{item.description}</p>
-                                <div className="text-sm text-gray-500 mb-4">
+                                <p className="text-gray-600 mb-2">{item.description}</p>
+                                <div className="text-sm text-gray-500 mb-2">
+                                    <p>Category: {item.category}</p>
                                     <p>Date: {new Date(item.date).toLocaleDateString()}</p>
-                                    {item.time && <p>Time: {item.time}</p>}
-                                    {item.venue && <p>Venue: {item.venue}</p>}
-                                    {item.organizer && <p>Organizer: {item.organizer}</p>}
+                                    <p>Time: {item.time}</p>
+                                    <p>Venue: {item.venue}</p>
+                                    <p>Organizer: {item.organizer}</p>
+                                    <p>Participants: {item.participants}</p>
                                 </div>
                                 <div className="flex justify-end">
                                     <Button
                                         title="Delete"
-                                        onClick={() => handleDelete(item._id, 'event')}
+                                        onClick={() => handleDelete(item._id)}
                                         className="bg-red-500 hover:bg-red-600"
                                     />
                                 </div>
@@ -309,4 +289,4 @@ const NewsEventUpdate = () => {
     );
 };
 
-export default NewsEventUpdate; 
+export default CulturalUpdate; 

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import ImageCard from '../../components/imageCard';
-import facilityHero from '../../assets/facilities.png';
 import ContentSection from '../../components/contextSection';
 import Button from '../../components/button';
 import axios from 'axios';
+
+const BACKEND_URL = 'http://localhost:8000';
 
 const FacilitiesHeroSection = () => {
     const [heroData, setHeroData] = useState({
         title: "Facilities Provide at GPGCWS",
         description: "GPGCWS offers a wide range of modern facilities to support student life and learning. Our well-stocked library, advanced computer labs, secure hostel, clean canteen, and peaceful masjid ensure a comfortable and enriching campus experience for all students.",
-        imageUrl: facilityHero,
         buttonText: "Read More",
         buttonLink: "/facilities"
     });
@@ -19,21 +19,26 @@ const FacilitiesHeroSection = () => {
     useEffect(() => {
         const fetchHeroData = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/facility-hero');
-                const data = response.data.data;
-                
-                if (data && data.status === 'active') {
-                    setHeroData({
-                        title: data.title || heroData.title,
-                        description: data.description || heroData.description,
-                        imageUrl: data.imageUrl || heroData.imageUrl,
-                        buttonText: data.buttonText || heroData.buttonText,
-                        buttonLink: data.buttonLink || heroData.buttonLink
-                    });
+                const response = await axios.get(`${BACKEND_URL}/api/facility-hero`);
+                if (response.data && response.data.data) {
+                    const data = Array.isArray(response.data.data) 
+                        ? response.data.data[0] 
+                        : response.data.data;
+                    
+                    if (data && data.status === 'active') {
+                        setHeroData({
+                            title: data.title || heroData.title,
+                            description: data.description || heroData.description,
+                            imageUrl: data.imageUrl ? `${BACKEND_URL}${data.imageUrl}` : heroData.imageUrl,
+                            buttonText: data.buttonText || heroData.buttonText,
+                            buttonLink: data.buttonLink || heroData.buttonLink
+                        });
+                    }
                 }
-            } catch (error) {
-                console.error('Error fetching hero section data:', error);
-                setError(error);
+                setError(null);
+            } catch (err) {
+                console.error('Error fetching hero section:', err);
+                setError('Failed to load hero section');
             } finally {
                 setLoading(false);
             }
@@ -54,7 +59,6 @@ const FacilitiesHeroSection = () => {
         <div className="relative w-full h-screen mt-8 overflow-hidden bg-gray flex items-center justify-center">
             {/* Main Content Wrapper */}
             <div className="flex flex-col md:flex-row items-center justify-between max-w-[1350px] w-full p-8 gap-8">
-                
                 {/* Text Section */}
                 <div className="md:w-1/2">
                     <ContentSection 

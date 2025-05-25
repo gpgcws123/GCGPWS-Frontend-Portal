@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import FacilitesHeroSection from "./FacilityHeroSection";
+import FacilitiesHeroSection from "./FacilityHeroSection";
 import LibrarySection from "./librarySection";
 import CompLabSection from "./computerLab";
 import HostelSection from "./hostelSection";
@@ -24,8 +24,8 @@ export default function Facilities() {
 
     return (
         <div>
-            <div >
-                <FacilitesHeroSection />
+            <div>
+                <FacilitiesHeroSection />
             </div>
             <div id="library">
                 <LibrarySection />

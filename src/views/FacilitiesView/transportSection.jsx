@@ -1,35 +1,68 @@
-import React from 'react';
-import library from '../../assets/transport.jpg';
+import React, { useState, useEffect } from 'react';
+import ImageCard from '../../components/imageCard';
 import ContentSection from '../../components/contextSection';
-import HeadingTitle from '../../components/heading';
+import axios from 'axios';
+
+const BACKEND_URL = 'http://localhost:8000';
 
 const TransportSection = () => {
-    return (
-        <div className="relative w-full h-auto mt-8 overflow-hidden bg-gray flex flex-col items-center justify-center">
-            
-            {/* Title Section */}
-            <div className="w-full text-center mt-5 mb-6">
-                <HeadingTitle title="Transport" width='300px' />
-            </div>
+    const [transportData, setTransportData] = useState({
+        title: "Transport",
+        description: "Our college provides reliable transportation services to ensure safe and convenient travel for students. Our fleet of well-maintained buses covers major routes, making daily commute hassle-free. Professional drivers and regular maintenance ensure safety and punctuality.",
+        imageUrl: "/images/transport-default.jpg"
+    });
+    const [loading, setLoading] = useState(true);
 
-            {/* Main Content Wrapper */}
-            <div className="flex flex-col md:flex-row  justify-between max-w-[1350px] w-full p-8 gap-8">
-                
-                {/* Text Section */}
+    useEffect(() => {
+        const fetchTransportData = async () => {
+            try {
+                const response = await axios.get(`${BACKEND_URL}/api/facility?type=transport`);
+                if (response.data && response.data.data) {
+                    const data = Array.isArray(response.data.data) 
+                        ? response.data.data[0] 
+                        : response.data.data;
+                    
+                    if (data && data.status === 'active') {
+                        setTransportData({
+                            title: data.title || transportData.title,
+                            description: data.description || transportData.description,
+                            imageUrl: data.images && data.images[0] ? `${BACKEND_URL}${data.images[0]}` : transportData.imageUrl
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching transport data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTransportData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="w-full h-screen flex items-center justify-center">
+                <div className="text-xl">Loading...</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-full min-h-screen flex items-center justify-center bg-gray">
+            <div className="flex flex-col md:flex-row-reverse items-center justify-between max-w-[1350px] w-full p-8 gap-8">
                 <div className="md:w-1/2">
                     <ContentSection 
-                        title="Transport" 
-                        description="The GPGCWS provides reliable transport facilities for students and staff, covering major routes in and around the city. Buses are well-maintained and operated on a fixed schedule to ensure timely arrival and departure. The service offers a safe and convenient travel option, reducing the stress of daily commuting. Experienced drivers and regular supervision ensure a smooth and disciplined journey. Transport support plays a key role in improving access to education for many students."
-                        
+                        title={transportData.title}
+                        description={transportData.description}
                     />
                 </div>
-
-                {/* Image Section */}
                 <div className="md:w-1/2 flex justify-center">
-                    <img 
-                        src={library} 
-                        alt="College Library"
-                        className="w-[580px] h-[400px] rounded-[10px] shadow-[4_10px_15px_rgba(0,0,0,0.3)]"
+                    <ImageCard 
+                        src={transportData.imageUrl}
+                        width="580px"
+                        height="460px"
+                        alt="Transport Facility"
                     />
                 </div>
             </div>
