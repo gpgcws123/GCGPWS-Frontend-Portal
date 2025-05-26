@@ -27,6 +27,9 @@ import AllEventView from './views/News&EventView/allEventView';
 import AllNewsView from './views/News&EventView/allNewView';
 import AllCulturals from './views/News&EventView/allCultural';
 import AdminPanel from './views/AdminDashboardView/adminPanel';
+import EventDetail from './views/News&EventView/EventDetail';
+import NewsDetail from './views/News&EventView/NewsDetail';
+import CulturalDetail from './views/News&EventView/CulturalDetail';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(sessionStorage.getItem('isAuthenticated') === 'true');
@@ -81,6 +84,9 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/events/:id" element={<Layout><EventDetail /></Layout>} />
+        <Route path="/news/:id" element={<Layout><NewsDetail /></Layout>} />
+        <Route path="/cultural/:id" element={<Layout><CulturalDetail /></Layout>} />
       </Routes>
     </Router>
   );

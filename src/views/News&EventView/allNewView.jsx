@@ -1,35 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import heroImage from '../../assets/heroImage1.jpg';
 import SimpleCard from '../../components/simpleCard';
+import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import Button from '../../components/button';
+import HeadingTitle from '../../components/heading';
+import HeadingWithButton from '../../components/headingWithButton';
+import { FaUsers, FaCalendarAlt, FaClock } from "react-icons/fa"; 
 
 // ✅ News Images
 import newsImg1 from "../../assets/schedule.jpg";
 import newsImg2 from "../../assets/holiday.jpg";
 import newsImg3 from "../../assets/planting.jpg";
-import HeadingTitle from '../../components/heading';
-import Button from '../../components/button';
-import HeadingWithButton from '../../components/headingWithButton';
-import { FaUsers, FaCalendarAlt, FaClock } from "react-icons/fa"; 
 
 const AllNewsView = () => {
-    const newsData = [
-       {
-         title: "Exam Schedule",
-         image: newsImg1,
-         link: "/news-details",
-       },
-       {
-         title: "Public Holiday",
-         image: newsImg2,
-         link: "/news-details",
-       },
-       {
-         title: "Tree Planting Campaign",
-         image: newsImg3,
-         link: "/news-details",
-       },
-     ];
-   
+  const [newsData, setNewsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/api/news/list')
+      .then(res => {
+        setNewsData(res.data.data || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <div>
       {/* ✅ Hero Section */}
@@ -65,7 +64,7 @@ const AllNewsView = () => {
           >
              <div className="relative w-full h-[250px] border-b-8 border-solid border-black">
               <img
-                src={news.image}
+                src={news.imageUrl}
                 alt={news.title}
                 className="w-full h-full object-cover rounded-t-[10px]"
               />
@@ -85,7 +84,7 @@ const AllNewsView = () => {
                 className="px-8"
                 boxShadow={false}
                 title="Read More"
-               to='/academic/Detailpage'
+                to={`/news/${news._id}`}
               />
             </div>
           </SimpleCard>

@@ -5,6 +5,7 @@ import Button from '../../../components/button';
 import Heading from '../../../components/heading';
 import { Editor } from '@tinymce/tinymce-react';
 import { toast } from 'react-toastify';
+import SimpleCard from '../../../components/simpleCard';
 
 const BACKEND_URL = 'http://localhost:8000';
 
@@ -26,6 +27,8 @@ const NewsEventUpdate = () => {
         organizer: '', // For events
         status: 'active'
     });
+    const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+    const [detailsContent, setDetailsContent] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -250,7 +253,7 @@ const NewsEventUpdate = () => {
                 <h2 className="text-2xl font-bold mb-4">News</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {data.news.map((item) => (
-                        <Card key={item._id} className="bg-white shadow-lg">
+                        <SimpleCard key={item._id} className="bg-white shadow-lg">
                             <img
                                 src={`${BACKEND_URL}${item.imageUrl}`}
                                 alt={item.title}
@@ -259,7 +262,7 @@ const NewsEventUpdate = () => {
                             <div className="p-4">
                                 <h3 className="text-xl font-bold mb-2">{item.title}</h3>
                                 <p className="text-gray-600 mb-4">{item.description}</p>
-                                <div className="flex justify-between items-center">
+                                <div className="flex justify-between items-center mb-2">
                                     <span className="text-sm text-gray-500">{new Date(item.date).toLocaleDateString()}</span>
                                     <Button
                                         title="Delete"
@@ -267,8 +270,16 @@ const NewsEventUpdate = () => {
                                         className="bg-red-500 hover:bg-red-600"
                                     />
                                 </div>
+                                <Button
+                                    title="View Details"
+                                    onClick={() => {
+                                        setDetailsContent(item.content);
+                                        setDetailsModalOpen(true);
+                                    }}
+                                    className="bg-blue-500 hover:bg-blue-600 w-full mt-2"
+                                />
                             </div>
-                        </Card>
+                        </SimpleCard>
                     ))}
                 </div>
             </div>
@@ -276,35 +287,69 @@ const NewsEventUpdate = () => {
             {/* Events List */}
             <div>
                 <h2 className="text-2xl font-bold mb-4">Events</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {data.events.map((item) => (
-                        <Card key={item._id} className="bg-white shadow-lg">
+                <div className="w-full flex flex-wrap justify-center gap-6">
+                    {data.events.map((item, index) => (
+                        <SimpleCard
+                          bgColor="bg-gray"
+                          key={item._id}
+                          boxShadow={false}
+                          width="w-[400px]"
+                          height="h-[500px]"
+                          className="!p-0 flex flex-col justify-between"
+                        >
+                          <div className="relative w-full h-[250px]">
                             <img
-                                src={`${BACKEND_URL}${item.imageUrl}`}
-                                alt={item.title}
-                                className="w-full h-48 object-cover"
+                              src={`${BACKEND_URL}${item.imageUrl}`}
+                              alt={item.title}
+                              className="w-full h-full object-cover rounded-t-[10px]"
                             />
-                            <div className="p-4">
-                                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                                <p className="text-gray-600 mb-4">{item.description}</p>
-                                <div className="text-sm text-gray-500 mb-4">
-                                    <p>Date: {new Date(item.date).toLocaleDateString()}</p>
-                                    {item.time && <p>Time: {item.time}</p>}
-                                    {item.venue && <p>Venue: {item.venue}</p>}
-                                    {item.organizer && <p>Organizer: {item.organizer}</p>}
-                                </div>
-                                <div className="flex justify-end">
-                                    <Button
-                                        title="Delete"
-                                        onClick={() => handleDelete(item._id, 'event')}
-                                        className="bg-red-500 hover:bg-red-600"
-                                    />
-                                </div>
-                            </div>
-                        </Card>
+                            {item.date && (
+                              <div className="absolute top-0 left-4 bg-black text-white px-4 py-2 rounded-b-[10px] text-center">
+                                <div className="font-bold text-[22px]">{new Date(item.date).getDate().toString().padStart(2, '0')}</div>
+                                <div className="text-base">{new Date(item.date).toLocaleString('default', { month: 'short', year: 'numeric' })}</div>
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-2 text-center">
+                            <h2 className="text-[26px] font-jakarta font-semibold leading-8 mb-2">
+                              {item.title}
+                            </h2>
+                            <p className="text-[18px] font-light font-poppins leading-6">
+                              {item.description}
+                            </p>
+                          </div>
+                          <div className="flex justify-between px-4 pb-4 gap-2">
+                            <Button
+                              title="View Details"
+                              onClick={() => {
+                                setDetailsContent(item.content);
+                                setDetailsModalOpen(true);
+                              }}
+                              className="bg-blue-500 hover:bg-blue-600"
+                            />
+                            <Button
+                              title="Delete"
+                              onClick={() => handleDelete(item._id, 'event')}
+                              className="bg-red-500 hover:bg-red-600"
+                            />
+                          </div>
+                        </SimpleCard>
                     ))}
                 </div>
             </div>
+
+            {/* Details Modal */}
+            {detailsModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-8 max-w-2xl w-full relative">
+                        <button
+                            className="absolute top-2 right-2 text-2xl"
+                            onClick={() => setDetailsModalOpen(false)}
+                        >✖</button>
+                        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: detailsContent }} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
