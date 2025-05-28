@@ -6,27 +6,27 @@ import ContentSection from '../../components/contextSection';
 
 const BACKEND_URL = 'http://localhost:5000';
 
-const DepartmentDetail = () => {
+const ProgramDetail = () => {
     const { id } = useParams();
-    const [department, setDepartment] = useState(null);
+    const [program, setProgram] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchDepartmentDetail = async () => {
+        const fetchProgramDetail = async () => {
             try {
                 const response = await axios.get(`${BACKEND_URL}/api/academic/${id}`);
                 if (response.data.success) {
-                    setDepartment(response.data.data);
+                    setProgram(response.data.data);
                 }
                 setLoading(false);
             } catch (error) {
-                console.error('Error fetching department details:', error);
+                console.error('Error fetching program details:', error);
                 setLoading(false);
             }
         };
 
         if (id) {
-            fetchDepartmentDetail();
+            fetchProgramDetail();
         }
     }, [id]);
 
@@ -34,8 +34,8 @@ const DepartmentDetail = () => {
         return <div className="w-full h-screen flex items-center justify-center">Loading...</div>;
     }
 
-    if (!department) {
-        return <div className="w-full h-screen flex items-center justify-center">Department not found</div>;
+    if (!program) {
+        return <div className="w-full h-screen flex items-center justify-center">Program not found</div>;
     }
 
     const getImageUrl = (imageUrl) => {
@@ -44,40 +44,40 @@ const DepartmentDetail = () => {
         return `${BACKEND_URL}${imageUrl}`;
     };
 
-  return (
+    return (
         <div className="min-h-screen bg-gray-50">
             {/* Hero Section */}
-      <div
+            <div
                 className="relative w-full h-[60vh] bg-cover bg-center"
-        style={{
-                    backgroundImage: `url(${getImageUrl(department.image)})`
-        }}
-      >
+                style={{
+                    backgroundImage: `url(${getImageUrl(program.image)})`
+                }}
+            >
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="text-center text-white">
-                        <h1 className="text-4xl md:text-6xl font-bold mb-4">{department.title}</h1>
-                        <p className="text-xl md:text-2xl">{department.description}</p>
+                        <h1 className="text-4xl md:text-6xl font-bold mb-4">{program.title}</h1>
+                        <p className="text-xl md:text-2xl">{program.description}</p>
                     </div>
-        </div>
-      </div>
+                </div>
+            </div>
 
             {/* Content Section */}
             <div className="max-w-4xl mx-auto py-12 px-4">
                 <div className="bg-white rounded-lg shadow-lg p-8">
-                    {/* Department Info */}
+                    {/* Program Info */}
                     <div className="mb-8">
-                        <h2 className="text-3xl font-bold mb-4">{department.title}</h2>
-                        <p className="text-gray-600 mb-6">{department.description}</p>
-        </div>
-        
+                        <h2 className="text-3xl font-bold mb-4">{program.title}</h2>
+                        <p className="text-gray-600 mb-6">{program.description}</p>
+                    </div>
+
                     {/* TinyMCE Content */}
                     <div className="prose max-w-none">
-                        <div dangerouslySetInnerHTML={{ __html: department.content }} />
+                        <div dangerouslySetInnerHTML={{ __html: program.content }} />
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-      </div>
-    </div>
-  );
+    );
 };
 
-export default DepartmentDetail; 
+export default ProgramDetail; 

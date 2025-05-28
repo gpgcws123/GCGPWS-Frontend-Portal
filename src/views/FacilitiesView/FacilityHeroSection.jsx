@@ -4,7 +4,7 @@ import ContentSection from '../../components/contextSection';
 import Button from '../../components/button';
 import axios from 'axios';
 
-const BACKEND_URL = 'http://localhost:8000';
+const BACKEND_URL = 'http://localhost:5000';
 
 const FacilitiesHeroSection = () => {
     const [heroData, setHeroData] = useState({
@@ -21,10 +21,10 @@ const FacilitiesHeroSection = () => {
             try {
                 const response = await axios.get(`${BACKEND_URL}/api/facility-hero`);
                 if (response.data && response.data.data) {
-                    const data = Array.isArray(response.data.data) 
-                        ? response.data.data[0] 
+                    const data = Array.isArray(response.data.data)
+                        ? response.data.data[0]
                         : response.data.data;
-                    
+
                     if (data && data.status === 'active') {
                         setHeroData({
                             title: data.title || heroData.title,
@@ -61,27 +61,27 @@ const FacilitiesHeroSection = () => {
             <div className="flex flex-col md:flex-row items-center justify-between max-w-[1350px] w-full p-8 gap-8">
                 {/* Text Section */}
                 <div className="md:w-1/2">
-                    <ContentSection 
+                    <ContentSection
                         title={heroData.title}
                         description={heroData.description}
                     />
                     <div className="mt-4">
-                        <Button 
-                            height="43px" 
-                            width="145px" 
-                            boxShadow={false} 
-                            title={heroData.buttonText} 
-                            to={heroData.buttonLink} 
+                        <Button
+                            height="43px"
+                            width="145px"
+                            boxShadow={false}
+                            title={heroData.buttonText}
+                            to={heroData.buttonLink}
                         />
                     </div>
                 </div>
 
                 {/* Image Section */}
                 <div className="md:w-1/2 flex justify-center">
-                    <ImageCard 
-                        src={heroData.imageUrl} 
-                        width="580px" 
-                        height="460px" 
+                    <ImageCard
+                        src={heroData.imageUrl}
+                        width="580px"
+                        height="460px"
                         alt="Facilities Overview"
                     />
                 </div>

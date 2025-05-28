@@ -16,7 +16,6 @@ import AllBooks from './views/StudentPortal/AllBooks';
 import AllNotes from './views/StudentPortal/Allnotes';
 import Alllecture from './views/StudentPortal/Alllecture';
 import AllLecture from './views/StudentPortal/Alllecture';
-import DetailPage from './views/AcademicView/departmentDetail';
 import AllAdmisson from './views/AdmissionView/allAdmissions';
 import AllAdmissionPolicies from './views/AdmissionView/allAdmissionPolicies';
 import AllAdmissionCritreia from './views/AdmissionView/allAdmissionCritreia';
@@ -30,6 +29,11 @@ import AdminPanel from './views/AdminDashboardView/adminPanel';
 import EventDetail from './views/News&EventView/EventDetail';
 import NewsDetail from './views/News&EventView/NewsDetail';
 import CulturalDetail from './views/News&EventView/CulturalDetail';
+import TeacherFacultyDetail from './views/AcademicView/teacherFacultyDetail';
+import DepartmentDetail from './views/AcademicView/departmentDetail';
+import ProgramDetail from './views/AcademicView/programDetail';
+import CriteriaDetail from './views/AdmissionView/criteriaDetail';
+import PolicyDetail from './views/AdmissionView/policyDetail';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(sessionStorage.getItem('isAuthenticated') === 'true');
@@ -37,7 +41,7 @@ const App = () => {
   useEffect(() => {
     const auth = sessionStorage.getItem('isAuthenticated');
     if (auth === 'false' || auth === null) {
-      setIsAuthenticated(false); // Ensure we're not showing protected routes if not logged in
+      setIsAuthenticated(false);
     }
   }, []);
 
@@ -51,42 +55,29 @@ const App = () => {
         <Route path="/admission/admissionform" element={<Layout><AdmissionForm /></Layout>} />
         <Route path="/academic" element={<Layout><Academic/></Layout>} />
         <Route path="/student-portal/All-Books" element={<StudentMainLayout><AllBooks/></StudentMainLayout>} />
-        <Route path="/academic/Detailpage" element={<Layout><DetailPage/></Layout>} />
         <Route path="/admisson/alladmisson" element={<Layout><AllAdmisson/></Layout>} />
         <Route path="/admisson/alladmissonpolicies" element={<Layout><AllAdmissionPolicies/></Layout>} />
         <Route path="/admisson/alladmissoncritria" element={<Layout><AllAdmissionCritreia/></Layout>} />
         <Route path="/academic/alldepartment" element={<Layout><AllDepartment/></Layout>} />
         <Route path="/academic/allprograms" element={<Layout><AllPrograms/></Layout>} />
         <Route path="/academic/allteacherfaculty" element={<Layout><AllTeacherFaculty/></Layout>} />
-        <Route path="/news/allevents" element={<Layout>  <AllEventView/></Layout>} />
-        <Route path="/news/allnews" element={<Layout>  <AllNewsView/></Layout>} />
-        <Route path="/news/allcultural" element={<Layout>  <AllCulturals/></Layout>} />
-      
+        <Route path="/news/allevents" element={<Layout><AllEventView/></Layout>} />
+        <Route path="/news/allnews" element={<Layout><AllNewsView/></Layout>} />
+        <Route path="/news/allcultural" element={<Layout><AllCulturals/></Layout>} />
         <Route path="/student-portal/All-Notes" element={<StudentMainLayout><AllNotes/></StudentMainLayout>} />
         <Route path="/student-portal/All-Lecture" element={<StudentMainLayout><AllLecture/></StudentMainLayout>} />
         <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/signup" element={<SignupPage />} />
-       <Route
-  path="/admin"
-  element={
-      <AdminPanel />
-    
-  }
-/>
-        
-        <Route
-          path="/student-portal"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <StudentMainLayout setIsAuthenticated={setIsAuthenticated}>
-                <StudentPortalView />
-              </StudentMainLayout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/student-portal" element={<ProtectedRoute isAuthenticated={isAuthenticated}><StudentMainLayout setIsAuthenticated={setIsAuthenticated}><StudentPortalView /></StudentMainLayout></ProtectedRoute>} />
         <Route path="/events/:id" element={<Layout><EventDetail /></Layout>} />
         <Route path="/news/:id" element={<Layout><NewsDetail /></Layout>} />
         <Route path="/cultural/:id" element={<Layout><CulturalDetail /></Layout>} />
+        <Route path="/academic/faculty/:id" element={<Layout><TeacherFacultyDetail /></Layout>} />
+        <Route path="/academic/department/:id" element={<Layout><DepartmentDetail /></Layout>} />
+        <Route path="/academic/program/:id" element={<Layout><ProgramDetail /></Layout>} />
+        <Route path="/admission/criteria/:id" element={<CriteriaDetail />} />
+        <Route path="/admission/policy/:id" element={<PolicyDetail />} />
       </Routes>
     </Router>
   );

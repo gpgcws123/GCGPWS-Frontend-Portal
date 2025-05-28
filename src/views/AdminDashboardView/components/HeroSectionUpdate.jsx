@@ -23,8 +23,8 @@ const HeroSectionUpdate = ({ sectionType }) => {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8000/api/${sectionType}-hero`);
-      
+      const response = await axios.get(`http://localhost:5000/api/${sectionType}-hero`);
+
       if (response.data && response.data.data) {
         setItems(Array.isArray(response.data.data) ? response.data.data : [response.data.data]);
       } else {
@@ -96,11 +96,11 @@ const HeroSectionUpdate = ({ sectionType }) => {
       };
 
       if (editingId) {
-        await axios.put(`http://localhost:8000/api/${sectionType}-hero/${editingId}`, heroData);
+        await axios.put(`http://localhost:5000/api/${sectionType}-hero/${editingId}`, heroData);
       } else {
-        await axios.post(`http://localhost:8000/api/${sectionType}-hero`, heroData);
+        await axios.post(`http://localhost:5000/api/${sectionType}-hero`, heroData);
       }
-      
+
       await fetchItems();
       resetForm();
       alert('Hero section saved successfully!');
@@ -113,7 +113,7 @@ const HeroSectionUpdate = ({ sectionType }) => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this hero section?')) {
       try {
-        await axios.delete(`http://localhost:8000/api/${sectionType}-hero/${id}`);
+        await axios.delete(`http://localhost:5000/api/${sectionType}-hero/${id}`);
         fetchItems();
       } catch (error) {
         console.error('Error deleting hero section:', error);
@@ -322,4 +322,4 @@ const HeroSectionUpdate = ({ sectionType }) => {
   );
 };
 
-export default HeroSectionUpdate; 
+export default HeroSectionUpdate;

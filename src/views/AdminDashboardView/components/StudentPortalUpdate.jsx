@@ -41,7 +41,7 @@ const StudentPortalUpdate = () => {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/student-portal');
+      const response = await axios.get('http://localhost:5000/api/student-portal');
       setItems(response.data.data);
       setLoading(false);
     } catch (error) {
@@ -52,7 +52,7 @@ const StudentPortalUpdate = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/academic/departments');
+      const response = await axios.get('http://localhost:5000/api/academic/departments');
       setDepartments(response.data.data);
     } catch (error) {
       console.error('Error fetching departments:', error);
@@ -63,9 +63,9 @@ const StudentPortalUpdate = () => {
     e.preventDefault();
     try {
       if (editingId) {
-        await axios.put(`http://localhost:8000/api/student-portal/${editingId}`, formData);
+        await axios.put(`http://localhost:5000/api/student-portal/${editingId}`, formData);
       } else {
-        await axios.post('http://localhost:8000/api/student-portal', formData);
+        await axios.post('http://localhost:5000/api/student-portal', formData);
       }
       fetchItems();
       resetForm();
@@ -77,7 +77,7 @@ const StudentPortalUpdate = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this resource?')) {
       try {
-        await axios.delete(`http://localhost:8000/api/student-portal/${id}`);
+        await axios.delete(`http://localhost:5000/api/student-portal/${id}`);
         fetchItems();
       } catch (error) {
         console.error('Error deleting resource:', error);
@@ -143,7 +143,7 @@ const StudentPortalUpdate = () => {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">Student Portal Resources</h2>
-      
+
       <form onSubmit={handleSubmit} className="mb-8 bg-white p-6 rounded-lg shadow">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -156,7 +156,7 @@ const StudentPortalUpdate = () => {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
             <select
@@ -475,4 +475,4 @@ const StudentPortalUpdate = () => {
   );
 };
 
-export default StudentPortalUpdate; 
+export default StudentPortalUpdate;

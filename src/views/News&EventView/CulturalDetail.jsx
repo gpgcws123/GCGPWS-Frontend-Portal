@@ -8,7 +8,7 @@ const CulturalDetail = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/api/cultural/${id}`)
+    axios.get(`http://localhost:5000/api/cultural/${id}`)
       .then(res => {
         setCultural(res.data.data);
         setLoading(false);
@@ -29,4 +29,4 @@ const CulturalDetail = () => {
   );
 };
 
-export default CulturalDetail; 
+export default CulturalDetail;

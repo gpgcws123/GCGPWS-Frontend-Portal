@@ -349,7 +349,7 @@ function HomePage() {
         const totalStudents = studentsSnapshot.size;
 
         // Fetch admission statistics
-        const admissionStatsResponse = await axios.get('http://localhost:8000/api/admissions/stats');
+        const admissionStatsResponse = await axios.get('http://localhost:5000/api/admissions/stats');
         const admissionStats = admissionStatsResponse.data.data;
 
         setStats({
@@ -453,7 +453,7 @@ function HomePage() {
                 </div>
                 <div>
                   <p className="font-medium">
-                    {activity.firstName} {activity.lastName} - {activity.course.toUpperCase()}
+                    {activity.firstName} {activity.lastName} - {activity.course ? activity.course.toUpperCase() : 'N/A'}
                   </p>
                   <p className="text-sm text-gray-500">
                     Status: <span className={getStatusTextColor(activity.status)}>{activity.status}</span>

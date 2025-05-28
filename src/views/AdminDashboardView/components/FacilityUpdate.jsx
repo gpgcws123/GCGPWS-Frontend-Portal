@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const BACKEND_URL = 'http://localhost:8000'; // Add backend URL constant
+const BACKEND_URL = 'http://localhost:5000'; // Add backend URL constant
 
 const FacilityUpdate = () => {
   const [items, setItems] = useState([]);
@@ -64,7 +64,7 @@ const FacilityUpdate = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${BACKEND_URL}/api/facility?type=${selectedFacility}`);
-      
+
       if (response.data && response.data.data) {
         const items = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
         // Log fetched items
@@ -136,7 +136,7 @@ const FacilityUpdate = () => {
     e.preventDefault();
     try {
       const formDataToSend = new FormData();
-      
+
       if (selectedFacility === 'hero') {
         formDataToSend.append('heading', formData.heading);
         formDataToSend.append('title', formData.title);
@@ -178,7 +178,7 @@ const FacilityUpdate = () => {
 
       // Log the response to see what we get back
       console.log('Server response:', response.data);
-      
+
       await fetchItems();
       resetForm();
       setIsModalOpen(false);
@@ -197,7 +197,7 @@ const FacilityUpdate = () => {
         const endpoint = selectedFacility === 'hero'
           ? `${BACKEND_URL}/api/facility-hero/${id}`
           : `${BACKEND_URL}/api/facility/${id}`;
-        
+
         await axios.delete(endpoint);
         fetchItems();
       } catch (error) {
@@ -218,14 +218,14 @@ const FacilityUpdate = () => {
       buttonText: item.buttonText || '',
       buttonLink: item.buttonLink || ''
     });
-    
+
     // Fix image preview URL
     if (selectedFacility === 'hero') {
       setPreviewImage(item.imageUrl ? `${BACKEND_URL}${item.imageUrl}` : '');
     } else {
       setPreviewImage(item.images && item.images.length > 0 ? `${BACKEND_URL}${item.images[0]}` : '');
     }
-    
+
     setEditingId(item._id);
     setIsModalOpen(true);
   };
@@ -263,17 +263,17 @@ const FacilityUpdate = () => {
     if (error || !imageUrl) {
       return (
         <div className="w-full h-full bg-gray-200 flex flex-col items-center justify-center">
-          <svg 
-            className="w-12 h-12 text-gray-400 mb-2" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24" 
+          <svg
+            className="w-12 h-12 text-gray-400 mb-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth="2" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
@@ -351,7 +351,7 @@ const FacilityUpdate = () => {
             {items.map((item) => {
               // Log each item's image URL
               console.log('Item image URL:', selectedFacility === 'hero' ? item.imageUrl : (item.images && item.images[0]));
-              
+
               return (
                 <div
                   key={item._id}
@@ -372,7 +372,7 @@ const FacilityUpdate = () => {
                         className="w-full h-full object-cover"
                       />
                     )}
-                    <span 
+                    <span
                       className={`absolute top-2 right-2 px-2 py-1 text-xs font-semibold rounded-full ${
                         item.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}
@@ -578,4 +578,4 @@ const FacilityUpdate = () => {
   );
 };
 
-export default FacilityUpdate; 
+export default FacilityUpdate;

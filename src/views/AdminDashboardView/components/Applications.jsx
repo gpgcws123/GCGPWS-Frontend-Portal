@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { FileText, CheckCircle, XCircle, AlertCircle, Mail } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'http://localhost:5000/api';
 
 const STATUS_MESSAGES = {
   approved: "Your application has been successfully approved! You can now come to college for further proceedings.",

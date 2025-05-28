@@ -3,7 +3,7 @@ import ImageCard from '../../components/imageCard';
 import ContentSection from '../../components/contextSection';
 import axios from 'axios';
 
-const BACKEND_URL = 'http://localhost:8000';
+const BACKEND_URL = 'http://localhost:5000';
 
 const SportFitnessSection = () => {
     const [sportsData, setSportsData] = useState({
@@ -18,10 +18,10 @@ const SportFitnessSection = () => {
             try {
                 const response = await axios.get(`${BACKEND_URL}/api/facility?type=sports`);
                 if (response.data && response.data.data) {
-                    const data = Array.isArray(response.data.data) 
-                        ? response.data.data[0] 
+                    const data = Array.isArray(response.data.data)
+                        ? response.data.data[0]
                         : response.data.data;
-                    
+
                     if (data && data.status === 'active') {
                         setSportsData({
                             title: data.title || sportsData.title,
@@ -52,13 +52,13 @@ const SportFitnessSection = () => {
         <div className="w-full min-h-screen flex items-center justify-center bg-gray">
             <div className="flex flex-col md:flex-row-reverse items-center justify-between max-w-[1350px] w-full p-8 gap-8">
                 <div className="md:w-1/2">
-                    <ContentSection 
+                    <ContentSection
                         title={sportsData.title}
                         description={sportsData.description}
                     />
                 </div>
                 <div className="md:w-1/2 flex justify-center">
-                    <ImageCard 
+                    <ImageCard
                         src={sportsData.imageUrl}
                         width="580px"
                         height="460px"

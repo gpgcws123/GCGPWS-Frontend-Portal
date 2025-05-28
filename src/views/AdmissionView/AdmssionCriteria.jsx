@@ -1,32 +1,44 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import HeadingTitle from "../../components/heading";
 import SimpleCard from "../../components/simpleCard";
 import Button from "../../components/button";
-
-// ✅ Policy Images
-import policyImg1 from "../../assets/notice.jpg";
-import policyImg2 from "../../assets/office.jpg";
-import policyImg3 from "../../assets/lists.jpg";
+import axios from 'axios';
 import HeadingWithButton from "../../components/headingWithButton";
 
+const BACKEND_URL = 'http://localhost:5000';
+
 const AdmissionCariteriaSection = () => {
-  const policiesData = [
-    {
-      title: "Admisssion Notice",
-      image: policyImg1,
-      link: "/policy-details",
-    },
-    {
-      title: "Admission Office",
-      image: policyImg2,
-      link: "/policy-details",
-    },
-    {
-      title: "Last Years merit",
-      image: policyImg3,
-      link: "/policy-details",
-    },
-  ];
+  const [criteriaData, setCriteriaData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCriteria = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/api/admissions?type=criteria`);
+        if (response.data.success) {
+          // Sort by date and get latest 3
+          const sortedData = response.data.data
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 3);
+          setCriteriaData(sortedData);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching criteria:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchCriteria();
+  }, []);
+
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return '/placeholder-image.jpg';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `${BACKEND_URL}${imageUrl}`;
+  };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="bg-white h-auto flex flex-col items-center px-8 py-16 text-black relative w-auto">
@@ -34,31 +46,32 @@ const AdmissionCariteriaSection = () => {
       <div className="w-full flex items-center justify-center relative mb-12">
         <HeadingTitle title="Admission Criteria" width="350px" />
       </div>
-      <HeadingWithButton headingText="Admission Criteria" width="auto" buttonText="View All Policies" to="/admisson/alladmissoncritria" />
+      <HeadingWithButton headingText="Admission Criteria" width="auto" buttonText="View All Criteria" to="/admisson/alladmissoncritria" />
 
       {/* ✅ Simple Cards Layout (No Swiper) */}
       <div className="w-full flex flex-wrap justify-between gap-10">
-        {policiesData.map((policy, index) => (
+        {criteriaData.map((criteria) => (
           <SimpleCard
-          bgColor="bg-gray"
-            key={index}
+            bgColor="bg-gray"
+            key={criteria._id}
             boxShadow={false}
             width="w-[400px]"
             height="h-[500px]"
             className="!p-0 flex flex-col justify-between rounded-[10px]"
           >
-            <div className="relative w-full h-[250px] ">
+            <div className="relative w-full h-[250px]">
               <img
-                src={policy.image}
-                alt={policy.title}
+                src={getImageUrl(criteria.image)}
+                alt={criteria.title}
                 className="w-full h-full object-cover rounded-t-[10px]"
               />
             </div>
 
-            <div className="p-6 text-center ">
+            <div className="p-6 text-center">
               <h2 className="text-[30px] font-jakarta font-semibold leading-8 mb-6">
-                {policy.title}
+                {criteria.title}
               </h2>
+              <p className="text-gray-700 mb-4">{criteria.description}</p>
             </div>
 
             <div className="flex justify-center">
@@ -69,7 +82,7 @@ const AdmissionCariteriaSection = () => {
                 className="px-8"
                 boxShadow={false}
                 title="Learn More"
-               to='/academic/Detailpage'
+                to={`/admission/criteria/${criteria._id}`}
               />
             </div>
           </SimpleCard>

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Upload, SendHorizontal, UserCircle, BookOpen, GraduationCap, Phone, Mail, Calendar, MapPin, Loader } from 'lucide-react';
 import axios from 'axios';
+import { getAuth } from 'firebase/auth';
 
-const API_URL = 'http://localhost:8000/api'; // Updated to the correct port
+const API_URL = 'http://localhost:5000/api'; // Updated to the correct port
 
 export default function AdmissionForm() {
   const [formData, setFormData] = useState({
@@ -124,22 +125,28 @@ export default function AdmissionForm() {
         ...uploadedUrls,
       };
 
-      // Submit to backend without authentication
+      // Get Firebase auth token if user is logged in
+      let authHeader = {};
+      const auth = getAuth();
+
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        authHeader = { Authorization: `Bearer ${token}` };
+      }
+
+      // Submit to backend with authentication (if available)
       const response = await axios.post(
         `${API_URL}/admissions/submit`,
-        submissionData
+        submissionData,
+        { headers: authHeader }
       );
 
-      if (response.data?.success) {
-        console.log('Application submitted:', response.data);
-        setApplicationId(response.data.applicationId);
-        setSubmitted(true);
-      } else {
-        throw new Error(response.data?.message || 'Failed to submit application');
-      }
+      console.log('Application submitted:', response.data);
+      setApplicationId(response.data.applicationId);
+      setSubmitted(true);
     } catch (error) {
       console.error('Error submitting form:', error);
-      setError(error.response?.data?.message || error.message || 'Failed to submit application. Please try again.');
+      setError(error.response?.data?.message || 'Failed to submit application. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -164,8 +171,6 @@ export default function AdmissionForm() {
           <h2 className="mt-4 text-2xl font-bold text-gray-800">Application Submitted Successfully!</h2>
           <p className="mt-2 text-gray-600">Thank you for submitting your application to our college.</p>
           <p className="mt-1 text-gray-600">Your application reference number is: <strong>{applicationId}</strong></p>
-          <p className="mt-1 text-gray-600">Please save this reference number for future correspondence.</p>
-          <p className="mt-1 text-gray-600">We have sent a confirmation email to your registered email address.</p>
           <p className="mt-1 text-gray-600">Your application will be reviewed, and you will be contacted via email shortly.</p>
           <button
             onClick={() => {

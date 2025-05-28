@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-const BACKEND_URL = 'http://localhost:8000';
+const BACKEND_URL = 'http://localhost:5000';
 
 const FacilitySection = () => {
   const [facility, setFacility] = useState(null);
@@ -17,8 +17,8 @@ const FacilitySection = () => {
         const response = await axios.get(`${BACKEND_URL}/api/facility?type=${type}`);
         if (response.data && response.data.data) {
           // Get the first facility of this type
-          const facilityData = Array.isArray(response.data.data) 
-            ? response.data.data[0] 
+          const facilityData = Array.isArray(response.data.data)
+            ? response.data.data[0]
             : response.data.data;
           setFacility(facilityData);
         }
@@ -64,7 +64,7 @@ const FacilitySection = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">{facility.title}</h1>
-        
+
         {facility.images && facility.images.length > 0 && (
           <div className="mb-8">
             <img
@@ -88,7 +88,7 @@ const FacilitySection = () => {
           {facility.content && (
             <div className="mb-6">
               <h2 className="text-2xl font-semibold mb-3">Details</h2>
-              <div 
+              <div
                 className="text-gray-700"
                 dangerouslySetInnerHTML={{ __html: facility.content }}
               />
@@ -108,4 +108,4 @@ const FacilitySection = () => {
   );
 };
 
-export default FacilitySection; 
+export default FacilitySection;
