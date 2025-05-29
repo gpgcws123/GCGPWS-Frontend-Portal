@@ -4,6 +4,7 @@ import SimpleCard from "../../components/simpleCard";
 import Button from "../../components/button";
 import HeadingWithButton from "../../components/headingWithButton";
 import axios from 'axios';
+import { FaCalendarAlt } from 'react-icons/fa';
 
 const BACKEND_URL = 'http://localhost:5000';
 
@@ -22,7 +23,7 @@ const EventSection = () => {
           events = res.data;
         }
         // Sort by date and take latest 3
-        events.sort((a, b) => new Date(b.date) - new Date(a.date));
+        events.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
         setEventData(events.slice(0, 3));
         setLoading(false);
       })
@@ -90,6 +91,19 @@ const EventSection = () => {
                 <h2 className="text-[26px] font-jakarta font-semibold leading-8 mb-2">
                   {event.title}
                 </h2>
+                {event.date && (
+                  <div className="flex items-center justify-center gap-2 text-gray-600 mb-2">
+                    <FaCalendarAlt />
+                    <span>
+                      {new Date(event.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                )}
                 <p className="text-[18px] font-light font-poppins leading-6">
                   {event.description}
                 </p>

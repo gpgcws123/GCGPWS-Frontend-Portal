@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+  import React, { useState, useEffect } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import axios from 'axios';
 import SimpleCard from '../../../components/simpleCard';
@@ -62,7 +62,7 @@ const AdmissionUpdate = () => {
       if (selectedType === 'hero') {
         fetchHeroData();
       } else {
-        fetchItems();
+    fetchItems();
       }
     }
   }, [selectedType]);
@@ -155,7 +155,7 @@ const AdmissionUpdate = () => {
 
       if (response.data.success) {
         await fetchItems();
-        resetForm();
+      resetForm();
         setIsModalOpen(false);
         alert('Item saved successfully!');
       } else {

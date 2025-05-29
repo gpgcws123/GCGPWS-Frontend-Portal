@@ -22,7 +22,7 @@ const NewsSection = () => {
           news = res.data;
         }
         // Sort by date and take latest 3
-        news.sort((a, b) => new Date(b.date) - new Date(a.date));
+        news.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
         setNewsData(news.slice(0, 3));
         setLoading(false);
       })

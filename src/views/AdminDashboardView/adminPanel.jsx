@@ -23,6 +23,7 @@ import NewsEventUpdate from './components/NewsEventUpdate';
 import CulturalUpdate from './components/CulturalUpdate';
 import StudentPortalUpdate from './components/StudentPortalUpdate';
 import AdmissionUpdate from './components/AdmissionUpdate';
+import HomePageUpdate from './components/HomePageUpdate';
 
 export default function AdminPanel() {
   const [activeSection, setActiveSection] = useState('home');
@@ -124,6 +125,8 @@ export default function AdminPanel() {
     switch (activeSection) {
       case 'home':
         return <HomePage />;
+      case 'homepageContent':
+        return <HomePageUpdate />;
       case 'students':
         return <StudentsRecord filterData={filterData} />;
       case 'applications':
@@ -167,6 +170,15 @@ export default function AdminPanel() {
               >
                 <Home size={20} />
                 {sidebarOpen && <span className="ml-4">Homepage</span>}
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveSection('homepageContent')}
+                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'homepageContent' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
+              >
+                <Home size={20} />
+                {sidebarOpen && <span className="ml-4">Homepage Content</span>}
               </button>
             </li>
             <li>

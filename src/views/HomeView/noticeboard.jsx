@@ -35,7 +35,7 @@ const NoticeBoard = () => {
             <h3 className="font-bold text-[24px]">Notice Board</h3>
 
           </div>
-          <Button title="View More" bgColor="#efff11" hoverColor="#F5FF70" className="mt-2 text-black py-1 px-3 " />
+          <Button title="View More" bgColor="#efff11" hoverBgColor="#F5FF70" className="mt-2 text-black py-1 px-3 " />
         </SimpleCard>
 
         {/* Swiper for Moving Cards */}

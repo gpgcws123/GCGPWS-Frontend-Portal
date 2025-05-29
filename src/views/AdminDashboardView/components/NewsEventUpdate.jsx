@@ -44,6 +44,34 @@ const NewsEventUpdate = () => {
     });
     const [showHeroForm, setShowHeroForm] = useState(false);
     const [selectedHeroImage, setSelectedHeroImage] = useState(null);
+    const [selectedType, setSelectedType] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState('');
+    const [editingId, setEditingId] = useState(null);
+
+    const contentTypes = [
+        {
+            id: 'hero',
+            name: 'Hero Section',
+            description: 'Manage the news & events page hero section',
+            icon: <FaImage className="text-5xl text-red-600" />,
+            color: 'bg-red-50'
+        },
+        {
+            id: 'news',
+            name: 'News',
+            description: 'Manage news articles and updates',
+            icon: <FaRegNewspaper className="text-5xl text-blue-600" />,
+            color: 'bg-blue-50'
+        },
+        {
+            id: 'event',
+            name: 'Events',
+            description: 'Manage upcoming and past events',
+            icon: <FaCalendarAlt className="text-5xl text-green-600" />,
+            color: 'bg-green-50'
+        }
+    ];
 
     useEffect(() => {
         fetchData();
@@ -76,28 +104,33 @@ const NewsEventUpdate = () => {
         try {
             setLoading(true);
             
-            // Fetch news and events separately
+            // Fetch news and events separately using their specific endpoints
             const newsResponse = await axios.get(`${BACKEND_URL}/api/news-events/news/list`);
             const eventsResponse = await axios.get(`${BACKEND_URL}/api/news-events/events/list`);
             
             console.log('Raw news response:', newsResponse.data);
             console.log('Raw events response:', eventsResponse.data);
             
-            // Get the data arrays
-            const newsItems = newsResponse.data?.data || [];
-            const eventItems = eventsResponse.data?.data || [];
+            // Get the data arrays with proper fallbacks
+            const newsItems = (newsResponse.data?.data || newsResponse.data || []).filter(item => item !== null);
+            const eventItems = (eventsResponse.data?.data || eventsResponse.data || []).filter(item => item !== null);
             
-            console.log('News items count:', newsItems.length);
-            console.log('Event items count:', eventItems.length);
+            console.log('Processed news items:', newsItems);
+            console.log('Processed event items:', eventItems);
             
             // Update state with the separated data
             setData({
-                news: newsItems,
-                events: eventItems
+                news: newsItems || [],
+                events: eventItems || []
             });
         } catch (err) {
             console.error('Error fetching data:', err);
             toast.error('Failed to fetch data');
+            // Set empty arrays as fallback
+            setData({
+                news: [],
+                events: []
+            });
         } finally {
             setLoading(false);
         }
@@ -123,7 +156,9 @@ const NewsEventUpdate = () => {
     const getImageUrl = (imageUrl) => {
         if (!imageUrl) return '/placeholder-image.jpg';
         // Make sure we handle the URL correctly
-        return `${BACKEND_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+        if (imageUrl.startsWith('http')) return imageUrl;
+        if (imageUrl.startsWith('/uploads')) return `${BACKEND_URL}${imageUrl}`;
+        return `${BACKEND_URL}/uploads/cultural/${imageUrl}`;
     };
 
     const handleSubmit = async (e) => {
@@ -133,78 +168,76 @@ const NewsEventUpdate = () => {
         try {
             const formDataToSend = new FormData();
             
-            // Add all form fields to FormData except special handling fields
-            Object.keys(formData).forEach(key => {
-                // Skip special fields that need custom handling
-                if (key !== 'existingImage') {
-                    if (formData[key] !== null && formData[key] !== undefined) {
-                        // Special handling for date field
-                        if (key === 'date' && formData[key]) {
-                            // Make sure date is in ISO format for the backend
-                            try {
-                                const dateObj = new Date(formData[key]);
-                                if (!isNaN(dateObj.getTime())) {
-                                    // Format as ISO string but only keep the date part
-                                    formDataToSend.append(key, dateObj.toISOString().split('T')[0]);
-                                    console.log('Formatted date for submission:', dateObj.toISOString().split('T')[0]);
-                                } else {
-                                    formDataToSend.append(key, formData[key]);
+            // Basic fields that are always required
+            formDataToSend.append('title', formData.title);
+            formDataToSend.append('type', selectedType === 'news' ? 'news' : 'event');
+            formDataToSend.append('content', formData.content || '');
+
+            // Handle description field
+            if (formData.description) {
+                formDataToSend.append('description', formData.description);
                                 }
-                            } catch (e) {
-                                console.error('Error formatting date for submission:', e);
-                                formDataToSend.append(key, formData[key]);
-                            }
-                        } else {
-                            formDataToSend.append(key, formData[key]);
+
+            // Handle date field for events
+            if (selectedType === 'event' && formData.date) {
+                formDataToSend.append('date', formData.date);
                         }
-                    }
-                }
-            });
             
-            // Add image file if selected
+            // Handle image
             if (selectedFile) {
                 formDataToSend.append('image', selectedFile);
-                console.log('New image file selected for upload');
-            } else if (isEditMode && formData.existingImage) {
-                // If no new image is selected but we're editing and have an existing image,
-                // pass the existing image path
-                formDataToSend.append('image', formData.existingImage);
-                console.log('Using existing image:', formData.existingImage);
             }
 
-            // Log the form data for debugging
-            console.log('Form data being sent:', Object.fromEntries(formDataToSend));
-            
-            const endpoint = formData.type === 'news' ? 'news' : 'events';
+            // Log what we're sending
+            console.log('Form data to be sent:', {
+                title: formData.title,
+                type: selectedType === 'news' ? 'news' : 'event',
+                description: formData.description,
+                content: formData.content,
+                date: formData.date,
+                hasImage: !!selectedFile,
+                isEdit: !!formData._id
+            });
+
             let response;
             
-            if (isEditMode && formData._id) {
+            if (formData._id) {
                 // Update existing item
+                console.log('Updating existing item with ID:', formData._id);
                 response = await axios.put(
                     `${BACKEND_URL}/api/news-events/${formData._id}`, 
                     formDataToSend,
-                    { headers: { 'Content-Type': 'multipart/form-data' } }
+                    { 
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                    }
                 );
-                toast.success(`${formData.type === 'news' ? 'News' : 'Event'} updated successfully`);
             } else {
                 // Create new item
+                const endpoint = selectedType === 'news' ? 'news' : 'events';
+                console.log('Creating new item of type:', endpoint);
                 response = await axios.post(
                     `${BACKEND_URL}/api/news-events/${endpoint}/create`, 
                     formDataToSend,
-                    { headers: { 'Content-Type': 'multipart/form-data' } }
+                    { 
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                    }
                 );
-                toast.success(`${formData.type === 'news' ? 'News' : 'Event'} created successfully`);
             }
 
-            console.log('Response:', response.data);
+            console.log('Server response:', response.data);
             
-            // Refresh data and reset form
-            await fetchData();
-            setShowForm(false);
+            if (response.data.success) {
+                toast.success(`${selectedType === 'news' ? 'News' : 'Event'} ${formData._id ? 'updated' : 'created'} successfully`);
+                await fetchData(); // Refresh the data
+                setIsModalOpen(false);
             resetForm();
+            } else {
+                throw new Error(response.data.message || 'Operation failed');
+            }
         } catch (err) {
-            console.error(`Error ${isEditMode ? 'updating' : 'creating'} item:`, err);
-            toast.error(`Failed to ${isEditMode ? 'update' : 'create'} item: ${err.message}`);
+            console.error('Full error details:', err);
+            console.error('Error response:', err.response?.data);
+            toast.error(err.response?.data?.message || err.message || 'Operation failed');
         } finally {
             setLoading(false);
         }
@@ -215,21 +248,27 @@ const NewsEventUpdate = () => {
         
         setLoading(true);
         try {
-            const endpoint = type === 'news' ? 'news' : 'events';
             await axios.delete(`${BACKEND_URL}/api/news-events/${id}`);
             
-            // Update local state immediately
-            setData(prevData => ({
+            // Update local state safely
+            setData(prevData => {
+                // Make sure we have the array before filtering
+                const currentArray = prevData[type] || [];
+                return {
                 ...prevData,
-                [type === 'news' ? 'news' : 'events']: prevData[type === 'news' ? 'news' : 'events'].filter(item => item._id !== id)
-            }));
+                    [type]: currentArray.filter(item => item && item._id !== id)
+                };
+            });
             
             toast.success('Item deleted successfully');
+            
+            // Refresh data to ensure UI is in sync
+            await fetchData();
         } catch (err) {
             console.error('Error deleting item:', err);
             toast.error('Failed to delete item');
-            // Refresh data in case of error to ensure UI is in sync
-            fetchData();
+            // Refresh data in case of error
+            await fetchData();
         } finally {
             setLoading(false);
         }
@@ -241,73 +280,50 @@ const NewsEventUpdate = () => {
             title: '',
             description: '',
             date: '',
-            image: null,
             content: '',
-            type: 'news',
-            existingImage: ''
+            type: selectedType === 'news' ? 'news' : 'event'
         });
         setSelectedFile(null);
+        setPreviewImage('');
+        setEditingId(null);
         setIsEditMode(false);
     };
     
     const handleEdit = (item, type) => {
-        // When editing, keep the existing image path
         console.log('Editing item:', item);
+        console.log('Item image path:', item.image);
         
-        // Format the date properly for the date input field
         let formattedDate = '';
         if (item.date) {
             try {
-                // Try to parse the date and format it as YYYY-MM-DD for the date input
-                let dateObj;
-                
-                // Check if the date is already in YYYY-MM-DD format
-                if (/^\d{4}-\d{2}-\d{2}$/.test(item.date)) {
-                    formattedDate = item.date;
-                    console.log('Date already in correct format:', formattedDate);
-                } else {
-                    // Try to parse the date
-                    dateObj = new Date(item.date);
-                    if (!isNaN(dateObj.getTime())) { // Check if date is valid
-                        // Add timezone offset to get the correct date
-                        const offset = dateObj.getTimezoneOffset();
-                        dateObj = new Date(dateObj.getTime() - (offset * 60 * 1000));
-                        formattedDate = dateObj.toISOString().split('T')[0];
-                        console.log('Formatted date for edit form:', formattedDate);
-                    } else {
-                        console.warn('Invalid date value:', item.date);
-                    }
-                }
+                formattedDate = new Date(item.date).toISOString().split('T')[0];
             } catch (err) {
                 console.error('Error formatting date:', err);
             }
-        } else {
-            console.warn('No date found in item');
         }
         
-        // Force a delay to ensure the form is mounted before setting the date
-        setTimeout(() => {
+        // Set form data with all fields from the item
             setFormData({
                 _id: item._id,
-                title: item.title,
+            title: item.title || '',
                 description: item.description || '',
                 date: formattedDate,
                 content: item.content || '',
-                type: type,
-                existingImage: item.image || ''
+            type: type === 'news' ? 'news' : 'event'
             });
             
-            // Force update the date input field directly
-            const dateInput = document.querySelector('input[type="date"]');
-            if (dateInput && formattedDate) {
-                dateInput.value = formattedDate;
-                console.log('Directly set date input value to:', formattedDate);
-            }
-        }, 100);
+        // Set preview image if exists
+        if (item.image) {
+            const imageUrl = getImageUrl(item.image);
+            console.log('Setting preview image URL:', imageUrl);
+            setPreviewImage(imageUrl);
+        } else {
+            setPreviewImage('');
+        }
         
+        setEditingId(item._id); // Set the editing ID
         setIsEditMode(true);
-        setFormType(type);
-        setShowForm(true);
+        setIsModalOpen(true);
     };
 
     const handleHeroSubmit = async (e) => {
@@ -363,52 +379,57 @@ const NewsEventUpdate = () => {
         }
     };
 
-    if (loading) return <div className="loader">Loading...</div>;
+    if (loading && selectedType) return <div>Loading...</div>;
 
     return (
         <div className="p-6">
-            <Heading title="News & Events Management" className="mb-8" />
-            
-            {/* Management Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {/* Hero Section Card */}
-                <div
-                    className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center cursor-pointer hover:shadow-xl transition"
-                    onClick={() => setShowHeroForm(true)}
-                >
-                    <FaImage size={48} className="mb-4 text-purple-500" />
-                    <h2 className="text-xl font-bold mb-2">Hero Section</h2>
-                    <p className="text-gray-600">Update hero section content</p>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">News & Events Management</h2>
                 </div>
 
-                {/* News Card */}
-                <div
-                    className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center cursor-pointer hover:shadow-xl transition"
-                    onClick={() => { setShowForm(true); setFormType('news'); setFormData({ ...formData, type: 'news' }); }}
+            {!selectedType ? (
+                // Main Type Selection Cards
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {contentTypes.map((type) => (
+                        <div
+                            key={type.id}
+                            onClick={() => setSelectedType(type.id)}
+                            className={`${type.color} rounded-lg shadow-md p-6 hover:shadow-lg cursor-pointer transform hover:-translate-y-1 transition-transform`}
                 >
-                    <FaRegNewspaper size={48} className="mb-4 text-blue-500" />
-                    <h2 className="text-xl font-bold mb-2">Add News</h2>
-                    <p className="text-gray-600">Click to add a news item</p>
+                            <div className="mb-4">{type.icon}</div>
+                            <h3 className="text-xl font-semibold mb-2">{type.name}</h3>
+                            <p className="text-gray-600">{type.description}</p>
+                        </div>
+                    ))}
                 </div>
-
-                {/* Events Card */}
-                <div
-                    className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center cursor-pointer hover:shadow-xl transition"
-                    onClick={() => { setShowForm(true); setFormType('event'); setFormData({ ...formData, type: 'event' }); }}
-                >
-                    <FaCalendarAlt size={48} className="mb-4 text-green-500" />
-                    <h2 className="text-xl font-bold mb-2">Add Event</h2>
-                    <p className="text-gray-600">Click to add an event</p>
-                </div>
+            ) : (
+                <div>
+                    <div className="flex justify-between items-center mb-6">
+                        <button
+                            onClick={() => setSelectedType(null)}
+                            className="px-4 py-2 bg-gray-200 text-black rounded hover:bg-gray-300"
+                        >
+                            Back to Categories
+                        </button>
+                        {selectedType !== 'hero' && (
+                            <button
+                                onClick={() => {
+                                    resetForm();
+                                    setIsModalOpen(true);
+                                }}
+                                className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+                            >
+                                Add New {selectedType === 'news' ? 'News' : 'Event'}
+                            </button>
+                        )}
             </div>
 
-            {/* Hero Section Display Card */}
-            {heroData._id && (
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold mb-4">Current Hero Section</h2>
+                    {selectedType === 'hero' ? (
+                        // Hero Section Content
+                        <div>
+                            {heroData ? (
                     <SimpleCard className="bg-white p-6">
                         <div className="flex flex-col md:flex-row gap-6">
-                            {/* Image */}
                             <div className="md:w-1/3">
                                 <img
                                     src={getImageUrl(heroData.imageUrl)}
@@ -420,482 +441,314 @@ const NewsEventUpdate = () => {
                                     }}
                                 />
                             </div>
-                            {/* Content */}
                             <div className="md:w-2/3">
                                 <h3 className="text-xl font-bold mb-2">{heroData.title}</h3>
                                 <p className="text-gray-600 mb-4">{heroData.description}</p>
-                                <div className="mb-4">
-                                    <p className="text-sm font-semibold">Button Text: <span className="font-normal">{heroData.buttonText}</span></p>
-                                    <p className="text-sm font-semibold">Button Link: <span className="font-normal">{heroData.buttonLink}</span></p>
+                                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                                                <span>Button Text:</span>
+                                                <span className="font-medium">{heroData.buttonText}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                                                <span>Button Link:</span>
+                                                <span className="font-medium">{heroData.buttonLink}</span>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button
-                                        title="Edit"
+                                            <div className="flex justify-end gap-4">
+                                                <button
                                         onClick={() => setShowHeroForm(true)}
-                                        className="bg-yellow-500 hover:bg-yellow-600"
-                                    />
-                                    <Button
-                                        title="Delete"
-                                        onClick={handleDeleteHero}
-                                        className="bg-red-500 hover:bg-red-600"
-                                    />
+                                                    className="text-yellow-500 hover:text-yellow-600"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(heroData._id)}
+                                                    className="text-red-500 hover:text-red-600"
+                                                >
+                                                    Delete
+                                                </button>
                                 </div>
                             </div>
                         </div>
                     </SimpleCard>
-                </div>
-            )}
-
-            {/* Hero Section Form Modal */}
-            {showHeroForm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl relative">
+                            ) : (
+                                <div className="text-center py-12">
                         <button
-                            className="absolute top-4 right-4 text-2xl text-gray-400 hover:text-gray-700"
-                            onClick={() => {
-                                setShowHeroForm(false);
-                                setSelectedHeroImage(null);
-                            }}
-                        >
-                            ✖
+                                        onClick={() => setShowHeroForm(true)}
+                                        className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+                                    >
+                                        Create Hero Section
                         </button>
-                        <h2 className="text-2xl font-bold mb-6 text-center">
-                            {heroData._id ? 'Update Hero Section' : 'Create Hero Section'}
-                        </h2>
-                        <form onSubmit={handleHeroSubmit}>
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block mb-2">Title</label>
-                                    <input
-                                        type="text"
-                                        value={heroData.title}
-                                        onChange={(e) => setHeroData({...heroData, title: e.target.value})}
-                                        className="w-full p-2 border rounded"
-                                        required
-                                    />
                                 </div>
-                                <div>
-                                    <label className="block mb-2">Description</label>
-                                    <textarea
-                                        value={heroData.description}
-                                        onChange={(e) => setHeroData({...heroData, description: e.target.value})}
-                                        className="w-full p-2 border rounded h-32"
-                                        required
-                                    />
+                            )}
                                 </div>
-                                <div>
-                                    <label className="block mb-2">Button Text</label>
-                                    <input
-                                        type="text"
-                                        value={heroData.buttonText}
-                                        onChange={(e) => setHeroData({...heroData, buttonText: e.target.value})}
-                                        className="w-full p-2 border rounded"
-                                        placeholder="Read More"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block mb-2">Button Link</label>
-                                    <input
-                                        type="text"
-                                        value={heroData.buttonLink}
-                                        onChange={(e) => setHeroData({...heroData, buttonLink: e.target.value})}
-                                        className="w-full p-2 border rounded"
-                                        placeholder="/news/allnews"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block mb-2">Hero Image</label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => setSelectedHeroImage(e.target.files[0])}
-                                        className="w-full p-2 border rounded"
-                                        accept="image/*"
-                                    />
-                                    {(heroData.imageUrl || selectedHeroImage) && (
-                                        <div className="mt-4">
-                                            <p className="text-sm text-gray-600 mb-2">
-                                                {selectedHeroImage ? 'New Image Preview:' : 'Current Image:'}
-                                            </p>
+                    ) : (
+                        // News/Events Grid
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {data[selectedType === 'news' ? 'news' : 'events'] && 
+                             data[selectedType === 'news' ? 'news' : 'events'].length > 0 ? (
+                                data[selectedType === 'news' ? 'news' : 'events'].map((item) => (
+                                    <SimpleCard key={item._id} className="bg-white p-4">
+                                        <div className="relative h-48 mb-4">
                                             <img
-                                                src={selectedHeroImage 
-                                                    ? URL.createObjectURL(selectedHeroImage)
-                                                    : getImageUrl(heroData.imageUrl)}
-                                                alt="Hero preview"
-                                                className="w-full h-40 object-cover rounded"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex gap-4 mt-6 justify-center">
-                                <Button
-                                    title={loading ? 'Saving...' : 'Save Changes'}
-                                    type="submit"
-                                    disabled={loading}
-                                />
-                                <Button
-                                    title="Cancel"
-                                    type="button"
-                                    onClick={() => {
-                                        setShowHeroForm(false);
-                                        setSelectedHeroImage(null);
-                                    }}
-                                    className="bg-gray-400 hover:bg-gray-500"
-                                />
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Existing News/Events Form Modal */}
-            {showForm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 transition-opacity">
-                    <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl relative animate-fadeIn">
-                        <button
-                            className="absolute top-4 right-4 text-2xl text-gray-400 hover:text-gray-700 focus:outline-none"
-                            onClick={() => { setShowForm(false); resetForm(); }}
-                            aria-label="Close"
-                        >✖</button>
-                        <h2 className="text-2xl font-bold mb-6 text-center">
-                            {formType === 'news' ? 'Add News' : 'Add Event'}
-                        </h2>
-                        <form onSubmit={handleSubmit}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block mb-2">Title</label>
-                                    <input
-                                        type="text"
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                        className="w-full p-2 border rounded"
-                                        required
-                                    />
-                                </div>
-                                {formType === 'event' && (
-                                    <>
-                                        <div>
-                                            <label className="block mb-2">Description</label>
-                                            <input
-                                                type="text"
-                                                value={formData.description}
-                                                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                                className="w-full p-2 border rounded"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block mb-2">Date</label>
-                                            <div className="flex flex-col">
-                                                {/* Hidden date input for form submission */}
-                                                <input 
-                                                    type="hidden" 
-                                                    name="date" 
-                                                    value={formData.date || ''} 
-                                                />
-                                                
-                                                {/* Visible date inputs */}
-                                                <div className="flex gap-2">
-                                                    <select 
-                                                        className="p-2 border rounded w-1/3"
-                                                        value={formData.date ? new Date(formData.date).getFullYear() : ''}
-                                                        onChange={(e) => {
-                                                            const year = e.target.value;
-                                                            const currentDate = formData.date ? new Date(formData.date) : new Date();
-                                                            currentDate.setFullYear(year);
-                                                            setFormData({...formData, date: currentDate.toISOString().split('T')[0]});
-                                                        }}
-                                                        required
-                                                    >
-                                                        <option value="">Year</option>
-                                                        {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
-                                                            <option key={year} value={year}>{year}</option>
-                                                        ))}
-                                                    </select>
-                                                    
-                                                    <select 
-                                                        className="p-2 border rounded w-1/3"
-                                                        value={formData.date ? new Date(formData.date).getMonth() + 1 : ''}
-                                                        onChange={(e) => {
-                                                            const month = parseInt(e.target.value) - 1;
-                                                            const currentDate = formData.date ? new Date(formData.date) : new Date();
-                                                            currentDate.setMonth(month);
-                                                            setFormData({...formData, date: currentDate.toISOString().split('T')[0]});
-                                                        }}
-                                                        required
-                                                    >
-                                                        <option value="">Month</option>
-                                                        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, index) => (
-                                                            <option key={month} value={index + 1}>{month}</option>
-                                                        ))}
-                                                    </select>
-                                                    
-                                                    <select 
-                                                        className="p-2 border rounded w-1/3"
-                                                        value={formData.date ? new Date(formData.date).getDate() : ''}
-                                                        onChange={(e) => {
-                                                            const day = parseInt(e.target.value);
-                                                            const currentDate = formData.date ? new Date(formData.date) : new Date();
-                                                            currentDate.setDate(day);
-                                                            setFormData({...formData, date: currentDate.toISOString().split('T')[0]});
-                                                        }}
-                                                        required
-                                                    >
-                                                        <option value="">Day</option>
-                                                        {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                                                            <option key={day} value={day}>{day}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                                
-                                                {isEditMode && formData.date && (
-                                                    <p className="text-xs text-gray-500 mt-1">Current date: {formData.date}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                                <div>
-                                    <label className="block mb-2">Image</label>
-                                    <input
-                                        type="file"
-                                        onChange={handleFileChange}
-                                        className="w-full p-2 border rounded"
-                                        accept="image/*"
-                                    />
-                                    {isEditMode && formData.existingImage && (
-                                        <div className="mt-2">
-                                            <p className="text-sm text-gray-600 mb-2">Current Image:</p>
-                                            <img 
-                                                src={getImageUrl(formData.existingImage)} 
-                                                alt="Current image" 
-                                                className="w-full h-32 object-cover rounded border"
+                                                src={item.image ? getImageUrl(item.image) : '/placeholder-image.jpg'}
+                                                alt={item.title}
+                                                className="w-full h-full object-cover rounded"
                                                 onError={(e) => {
                                                     e.target.onerror = null;
                                                     e.target.src = '/placeholder-image.jpg';
                                                 }}
                                             />
+                                            {selectedType === 'events' && item.date && (
+                                                <div className="absolute top-0 left-4 bg-black text-white px-4 py-2 rounded-b-lg">
+                                                    <div className="text-lg font-bold">
+                                                        {new Date(item.date).toLocaleDateString()}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                        <div className="p-4">
+                                            <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                                            <p className="text-gray-600 mb-4">{item.description}</p>
+                                            <div className="flex justify-end gap-4">
+                                                <button
+                                                    onClick={() => handleEdit(item, selectedType)}
+                                                    className="text-yellow-500 hover:text-yellow-600"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(item._id, selectedType)}
+                                                    className="text-red-500 hover:text-red-600"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </SimpleCard>
+                                ))
+                            ) : (
+                                <div className="text-center py-8 w-full">
+                                    <p className="text-gray-500">No {selectedType} available</p>
+                                </div>
+                            )}
+                            </div>
+                    )}
+                </div>
+            )}
+
+            {/* Form Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold">
+                                {editingId ? 'Edit' : 'Create'} {selectedType === 'news' ? 'News' : 'Event'}
+                            </h3>
+                        <button
+                                onClick={() => {
+                                    setIsModalOpen(false);
+                                    resetForm();
+                                }}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmit}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                                    <input
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full p-2 border rounded"
+                                        required
+                                    />
+                                </div>
+                                        <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                    <textarea
+                                                value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                className="w-full p-2 border rounded"
+                                                required
+                                            />
+                                        </div>
+                                {selectedType === 'event' && (
+                                        <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                                                <input 
+                                            type="date"
+                                            value={formData.date}
+                                                        onChange={(e) => {
+                                                console.log('Date changed:', e.target.value);
+                                                setFormData({ ...formData, date: e.target.value });
+                                                        }}
+                                            className="w-full p-2 border rounded"
+                                                        required
+                                        />
+                                        </div>
+                                )}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
+                                    <div className="space-y-4">
+                                        {previewImage && (
+                                            <div className="relative">
+                                                <img
+                                                    src={previewImage}
+                                                    alt="Preview"
+                                                    className="w-full h-48 object-cover rounded"
+                                                    onError={(e) => {
+                                                        console.error('Image load error:', e);
+                                                        e.target.src = '/placeholder-image.jpg';
+                                                    }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setPreviewImage('');
+                                                        setSelectedFile(null);
+                                                    }}
+                                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        )}
+                                    <input
+                                        type="file"
+                                        onChange={handleFileChange}
+                                        className="w-full p-2 border rounded"
+                                        accept="image/*"
+                                            required={!editingId && !previewImage}
+                                            />
+                                        </div>
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="block mb-2">Details</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
                                     <Editor
                                         apiKey="kgpqgw1s9eih5wsa0zyh7vz5god2gdybhz7wlnq8ojbnzl57"
                                         value={formData.content}
-                                        onEditorChange={(content) => setFormData({...formData, content})}
+                                        onEditorChange={(content) => setFormData({ ...formData, content })}
                                         init={{
                                             height: 300,
-                                            menubar: true,
+                                            menubar: false,
                                             plugins: [
                                                 'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
                                                 'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                                                'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount',
-                                                'codesample'
+                                                'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
                                             ],
                                             toolbar: 'undo redo | blocks | ' +
-                                                'codesample | bold italic forecolor | alignleft aligncenter ' +
+                                                'bold italic forecolor | alignleft aligncenter ' +
                                                 'alignright alignjustify | bullist numlist outdent indent | ' +
-                                                'table link | removeformat | help',
-                                            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-                                            codesample_languages: [
-                                                { text: 'HTML/XML', value: 'markup' },
-                                                { text: 'JavaScript', value: 'javascript' },
-                                                { text: 'CSS', value: 'css' },
-                                                { text: 'PHP', value: 'php' },
-                                                { text: 'Python', value: 'python' },
-                                                { text: 'Java', value: 'java' },
-                                                { text: 'C', value: 'c' },
-                                                { text: 'C++', value: 'cpp' }
-                                            ]
+                                                'removeformat | help'
                                         }}
                                     />
                                 </div>
                             </div>
-                            <div className="flex gap-4 mt-6 justify-center">
-                                <Button
-                                    title={loading ? 'Saving...' : 'Save'}
+                            <div className="flex justify-start mt-6">
+                                <button
                                     type="submit"
-                                    disabled={loading}
-                                    className=""
-                                />
-                                <Button
-                                    title="Cancel"
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 mr-4"
+                                >
+                                    {editingId ? 'Update' : 'Create'}
+                                </button>
+                                <button
                                     type="button"
-                                    onClick={() => { setShowForm(false); resetForm(); }}
-                                    className="bg-gray-400 hover:bg-gray-500"
-                                />
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        resetForm();
+                                    }}
+                                    className="px-4 py-2 bg-gray-200 text-black rounded hover:bg-gray-300"
+                                >
+                                    Cancel
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* News and Events Sections */}
-            <div className="flex flex-col space-y-12">
-                {/* News Section */}
-                <div className="p-6 bg-gray-50 rounded-xl shadow-sm">
-                    <h2 className="text-2xl font-bold mb-4 flex items-center">
-                        <FaRegNewspaper className="mr-2 text-blue-500" /> News Section
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {data.news && data.news.length > 0 ? (
-                            data.news.map((item) => (
-                                <SimpleCard key={item._id} className="bg-white shadow-lg">
+            {/* Hero Form Modal */}
+            {showHeroForm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+                        <h3 className="text-xl font-bold mb-4">
+                            {heroData ? 'Edit Hero Section' : 'Create Hero Section'}
+                        </h3>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                                <input
+                                    type="text"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    className="w-full p-2 border rounded"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    className="w-full p-2 border rounded h-32"
+                                    required
+                                                />
+                                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Button Text</label>
+                                <input
+                                    type="text"
+                                    value={formData.buttonText}
+                                    onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
+                                    className="w-full p-2 border rounded"
+                                        />
+                                    </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Button Link</label>
+                                <input
+                                    type="text"
+                                    value={formData.buttonLink}
+                                    onChange={(e) => setFormData({ ...formData, buttonLink: e.target.value })}
+                                    className="w-full p-2 border rounded"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
+                                <input
+                                    type="file"
+                                    onChange={handleFileChange}
+                                    className="w-full p-2 border rounded"
+                                    accept="image/*"
+                                />
+                                {previewImage && (
                                     <img
-                                        src={item.image ? getImageUrl(item.image) : '/placeholder-image.jpg'}
-                                        alt={item.title}
-                                        className="w-full h-48 object-cover"
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = '/placeholder-image.jpg';
-                                        }}
+                                        src={previewImage}
+                                        alt="Preview"
+                                        className="mt-2 w-full h-48 object-cover rounded"
                                     />
-                                    <div className="p-4">
-                                        <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                                        <p className="text-gray-600 mb-4">{item.description}</p>
-                                        <div className="flex justify-end items-center mb-2">
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    title="Edit"
-                                                    onClick={() => handleEdit(item, 'news')}
-                                                    className="bg-yellow-500 hover:bg-yellow-600"
-                                                />
-                                                <Button
-                                                    title="Delete"
-                                                    onClick={() => handleDelete(item._id, 'news')}
-                                                    className="bg-red-500 hover:bg-red-600"
-                                                />
-                                            </div>
-                                        </div>
-                                        <Button
-                                            title="View Details"
-                                            onClick={() => {
-                                                setDetailsContent(item.content);
-                                                setDetailsModalOpen(true);
-                                            }}
-                                            className="bg-blue-500 hover:bg-blue-600 w-full mt-2"
-                                        />
-                                    </div>
-                                </SimpleCard>
-                            ))
-                        ) : (
-                            <div className="col-span-3 text-center py-8">
-                                <p className="text-gray-500">No news items available</p>
-                            </div>
                         )}
                     </div>
-                </div>
-                
-                {/* Events Section */}
-                <div className="p-6 bg-gray-50 rounded-xl shadow-sm">
-                    <h2 className="text-2xl font-bold mb-4 flex items-center">
-                        <FaCalendarAlt className="mr-2 text-green-500" /> Events Section
-                    </h2>
-                    <div className="w-full flex flex-wrap justify-center gap-6">
-                        {data.events && data.events.length > 0 ? (
-                            data.events.map((item, index) => (
-                                <SimpleCard
-                                    bgColor="bg-gray"
-                                    key={item._id}
-                                    boxShadow={false}
-                                    width="w-[400px]"
-                                    height="h-[500px]"
-                                    className="!p-0 flex flex-col justify-between"
+                            <div className="flex justify-start">
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 mr-4"
                                 >
-                                    <div className="relative w-full h-[250px]">
-                                        <img
-                                            src={item.image ? getImageUrl(item.image) : '/placeholder-image.jpg'}
-                                            alt={item.title}
-                                            className="w-full h-full object-cover rounded-t-[10px]"
-                                            onError={(e) => {
-                                                e.target.onerror = null;
-                                                e.target.src = '/placeholder-image.jpg';
-                                            }}
-                                        />
-                                        {item.date && (
-                                            <div className="absolute top-0 left-4 bg-black text-white px-4 py-2 rounded-b-[10px] text-center">
-                                                <div className="font-bold text-[22px]">
-                                                    {(() => {
-                                                        try {
-                                                            const dateObj = new Date(item.date);
-                                                            if (!isNaN(dateObj.getTime())) {
-                                                                return dateObj.getDate().toString().padStart(2, '0');
-                                                            }
-                                                            return '--';
-                                                        } catch (e) {
-                                                            console.error('Error parsing date:', e);
-                                                            return '--';
-                                                        }
-                                                    })()}
-                                                </div>
-                                                <div className="text-base">
-                                                    {(() => {
-                                                        try {
-                                                            const dateObj = new Date(item.date);
-                                                            if (!isNaN(dateObj.getTime())) {
-                                                                return dateObj.toLocaleString('default', { month: 'short', year: 'numeric' });
-                                                            }
-                                                            return 'Invalid date';
-                                                        } catch (e) {
-                                                            console.error('Error parsing date:', e);
-                                                            return 'Invalid date';
-                                                        }
-                                                    })()}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="p-2 text-center">
-                                        <h2 className="text-[26px] font-jakarta font-semibold leading-8 mb-2">
-                                            {item.title}
-                                        </h2>
-                                        <p className="text-[18px] font-light font-poppins leading-6">
-                                            {item.description}
-                                        </p>
-                                    </div>
-                                    <div className="flex justify-between px-4 pb-4 gap-2">
-                                        <Button
-                                            title="View Details"
+                                    {heroData ? 'Update' : 'Create'}
+                                </button>
+                                <button
+                                    type="button"
                                             onClick={() => {
-                                                setDetailsContent(item.content);
-                                                setDetailsModalOpen(true);
+                                        setShowHeroForm(false);
+                                        resetForm();
                                             }}
-                                            className="bg-blue-500 hover:bg-blue-600"
-                                        />
-                                        <div className="flex gap-2">
-                                            <Button
-                                                title="Edit"
-                                                onClick={() => handleEdit(item, 'event')}
-                                                className="bg-yellow-500 hover:bg-yellow-600"
-                                            />
-                                            <Button
-                                                title="Delete"
-                                                onClick={() => handleDelete(item._id, 'event')}
-                                                className="bg-red-500 hover:bg-red-600"
-                                            />
-                                        </div>
-                                    </div>
-                                </SimpleCard>
-                            ))
-                        ) : (
-                            <div className="text-center py-8 w-full">
-                                <p className="text-gray-500">No events available</p>
+                                    className="px-4 py-2 bg-gray-200 text-black rounded hover:bg-gray-300"
+                                >
+                                    Cancel
+                                </button>
                             </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Details Modal */}
-            {detailsModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-8 max-w-2xl w-full relative">
-                        <button
-                            className="absolute top-2 right-2 text-2xl"
-                            onClick={() => setDetailsModalOpen(false)}
-                        >✖</button>
-                        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: detailsContent }} />
+                        </form>
                     </div>
                 </div>
             )}

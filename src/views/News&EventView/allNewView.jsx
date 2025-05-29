@@ -10,26 +10,38 @@ const BACKEND_URL = 'http://localhost:5000';
 
 const AllNewsView = () => {
   const [newsData, setNewsData] = useState([]);
+  const [eventsData, setEventsData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${BACKEND_URL}/api/news-events/news/list`)
-      .then(res => {
-        console.log('Raw API response:', res);
-        if (res.data && Array.isArray(res.data.data)) {
-          setNewsData(res.data.data);
-        } else if (res.data && Array.isArray(res.data)) {
-          setNewsData(res.data);
-        } else {
-          console.error('Unexpected data structure:', res.data);
-          setNewsData([]);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching news:', err);
-        setLoading(false);
-      });
+    Promise.all([
+      axios.get(`${BACKEND_URL}/api/news-events/news/list`),
+      axios.get(`${BACKEND_URL}/api/news-events/events/list`)
+    ])
+    .then(([newsRes, eventsRes]) => {
+      console.log('Raw News API response:', newsRes);
+      console.log('Raw Events API response:', eventsRes);
+      
+      // Handle news data
+      if (newsRes.data && Array.isArray(newsRes.data.data)) {
+        setNewsData(newsRes.data.data);
+      } else if (newsRes.data && Array.isArray(newsRes.data)) {
+        setNewsData(newsRes.data);
+      }
+
+      // Handle events data
+      if (eventsRes.data && Array.isArray(eventsRes.data.data)) {
+        setEventsData(eventsRes.data.data);
+      } else if (eventsRes.data && Array.isArray(eventsRes.data)) {
+        setEventsData(eventsRes.data);
+      }
+
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error('Error fetching data:', err);
+      setLoading(false);
+    });
   }, []);
 
   const getImageUrl = (imageUrl) => {
@@ -55,6 +67,7 @@ const AllNewsView = () => {
         </div>
       </div>
 
+      {/* News Section */}
       <div className="my-8 p-4 bg-white">
         <div className="my-8 text-center">
           <HeadingTitle title="Latest News" width="640px" />
@@ -104,6 +117,73 @@ const AllNewsView = () => {
             ))
           ) : (
             <div className="text-center py-8 text-gray-500">No news available</div>
+          )}
+        </div>
+      </div>
+
+      {/* Events Section */}
+      <div className="my-8 p-4 bg-gray-50">
+        <div className="my-8 text-center">
+          <HeadingTitle title="Latest Events" width="640px" />
+        </div>
+        <HeadingWithButton headingText="Upcoming Events" buttonText="" />
+
+        <div className="w-full flex flex-wrap justify-center gap-10">
+          {eventsData.length > 0 ? (
+            eventsData.map((event, index) => (
+              <SimpleCard
+                key={event._id || index}
+                boxShadow={false}
+                width="w-[400px]"
+                height="h-[500px]"
+                className="!p-0 flex flex-col justify-between rounded-[10px]"
+              >
+                <div className="relative w-full h-[250px]">
+                  <img
+                    src={getImageUrl(event.image)}
+                    alt={event.title}
+                    className="w-full h-full object-cover rounded-t-[10px]"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/placeholder-image.jpg';
+                    }}
+                  />
+                  {event.date && (
+                    <div className="absolute top-0 left-4 bg-black text-white px-4 py-2 rounded-b-lg">
+                      <div className="text-lg font-bold">
+                        {new Date(event.date).getDate().toString().padStart(2, '0')}
+                      </div>
+                      <div className="text-base">
+                        {new Date(event.date).toLocaleString('default', { month: 'short', year: 'numeric' })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-6 text-center">
+                  <h2 className="text-[26px] font-jakarta font-semibold leading-8 mb-2">
+                    {event.title}
+                  </h2>
+                  <p className="text-[18px] font-light font-poppins leading-6">
+                    {event.description}
+                  </p>
+                </div>
+
+                <div className="pb-6 flex justify-center">
+                  <Button
+                    rounded="rounded-[10px]"
+                    height="43px"
+                    width="auto"
+                    className="px-8"
+                    boxShadow={false}
+                    title="Learn More"
+                    to={`/events/${event._id}`}
+                  />
+                </div>
+              </SimpleCard>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500">No events available</div>
           )}
         </div>
       </div>
