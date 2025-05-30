@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Home, Users, FileText, Menu, X, Bell, Search, Clock, CheckCircle, BookOpen, Building2, Newspaper, GraduationCap, School, Music } from 'lucide-react';
+import { Home, Users, FileText, Menu, X, Bell, Search, Clock, CheckCircle, BookOpen, Building2, Newspaper, GraduationCap, School, Music, MessageSquare } from 'lucide-react';
 import { db } from '../../config/firebase';
 import {
   collection,
@@ -24,6 +24,7 @@ import CulturalUpdate from './components/CulturalUpdate';
 import StudentPortalUpdate from './components/StudentPortalUpdate';
 import AdmissionUpdate from './components/AdmissionUpdate';
 import HomePageUpdate from './components/HomePageUpdate';
+import ContactMessages from './components/ContactMessages';
 
 export default function AdminPanel() {
   const [activeSection, setActiveSection] = useState('home');
@@ -127,6 +128,8 @@ export default function AdminPanel() {
         return <HomePage />;
       case 'homepageContent':
         return <HomePageUpdate />;
+      case 'contacts':
+        return <ContactMessages />;
       case 'students':
         return <StudentsRecord filterData={filterData} />;
       case 'applications':
@@ -172,15 +175,25 @@ export default function AdminPanel() {
                 {sidebarOpen && <span className="ml-4">Homepage</span>}
               </button>
             </li>
-            <li>
+            <div className="space-y-1">
               <button
                 onClick={() => setActiveSection('homepageContent')}
-                className={`flex items-center p-3 rounded-lg w-full ${activeSection === 'homepageContent' ? 'bg-yellow text-black' : 'hover:bg-gray-800'}`}
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${activeSection === 'homepageContent' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-primary hover:text-white'}`}
               >
-                <Home size={20} />
-                {sidebarOpen && <span className="ml-4">Homepage Content</span>}
+                <Home className="mr-3 h-5 w-5" />
+                Homepage Content
               </button>
-            </li>
+            </div>
+            
+            <div className="space-y-1">
+              <button
+                onClick={() => setActiveSection('contacts')}
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${activeSection === 'contacts' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-primary hover:text-white'}`}
+              >
+                <MessageSquare className="mr-3 h-5 w-5" />
+                Contact Messages
+              </button>
+            </div>
             <li>
               <button
                 onClick={() => setActiveSection('students')}

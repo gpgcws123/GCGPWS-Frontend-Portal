@@ -1,39 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HeadingTitle from "../../components/heading";
 import HeadingWithButton from "../../components/headingWithButton";
 import SimpleCard from "../../components/simpleCard";
 import PlayIcon from "../../assets/mdi_play.svg";
-import Button from "../../components/button"
-// ✅ Lecture Thumbnails (Placeholder images)
-import lectureImg1 from "../../assets/CoursImages.png";
-import lectureImg2 from "../../assets/CoursImages.png";
-import lectureImg3 from "../../assets/CoursImages.png";
+import axios from 'axios';
 
-// ✅ Lecture Video List
-const videoList = [
-  {
-    thumbnail: lectureImg1,
-    src: "/videos/lecture1.mp4",
-    title: "Introduction to Physics - Lecture 01"
-  },
-  {
-    thumbnail: lectureImg2,
-    src: "/videos/lecture2.mp4",
-    title: "Organic Chemistry - Lecture 02"
-  },
-  {
-    thumbnail: lectureImg3,
-    src: "/videos/lecture3.mp4",
-    title: "Mathematics Algebra - Lecture 03"
-  },
-];
+const BACKEND_URL = 'http://localhost:5000';
 
 const LectureSection = () => {
+  const [featuredLectures, setFeaturedLectures] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentVideo, setCurrentVideo] = useState("");
 
-  const openVideoModal = (videoSrc) => {
-    setCurrentVideo(videoSrc);
+  useEffect(() => {
+    const fetchLectures = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/api/student-portal?type=lecture`);
+        if (response.data.success) {
+          // Get only the first 3 lectures for featured section
+          setFeaturedLectures(response.data.data.slice(0, 3));
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching lectures:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchLectures();
+  }, []);
+
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return '/placeholder-image.jpg';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `${BACKEND_URL}/${imageUrl}`;
+  };
+
+  const openVideoModal = (videoUrl) => {
+    setCurrentVideo(`${BACKEND_URL}/${videoUrl}`);
     setIsModalOpen(true);
   };
 
@@ -41,6 +46,10 @@ const LectureSection = () => {
     setIsModalOpen(false);
     setCurrentVideo("");
   };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
 
   return (
     <div className="bg-white h-auto flex flex-col items-center px-8 pb-8 mb-7 text-black relative w-auto">
@@ -52,31 +61,33 @@ const LectureSection = () => {
 
       {/* ✅ Lecture Cards */}
       <div className="w-full flex flex-wrap justify-center gap-10">
-        {videoList.map((video, index) => (
-         <SimpleCard
-         padding="0px"
-         bgColor="bg-gray"
-         key={index}
-         className="w-[400px] h-[500px] flex flex-col justify-between items-center cursor-pointer"
-       >
-         <div
-           className="bg-white shadow-lg rounded-lg overflow-hidden relative w-full h-[320px] cursor-pointer"
-           onClick={() => openVideoModal(video.src)}
-         >
-           <img src={video.thumbnail} alt={`Lecture ${index + 1}`} className="w-full h-full object-cover" />
-           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-             <img src={PlayIcon} alt="Play" className="w-12 h-12" />
-           </div>
-         </div>
-       
-         {/* Title */}
-         <p className="p-3 text-center text-[20px] font-jakarta font-semibold">
-           {video.title}
-         </p>
-       
-         {/* Learn More Button */}
-     
-       </SimpleCard>
+        {featuredLectures.map((lecture, index) => (
+          <SimpleCard
+            padding="0px"
+            bgColor="bg-gray"
+            key={index}
+            className="w-[400px] h-[500px] flex flex-col justify-between items-center cursor-pointer"
+          >
+            <div
+              className="bg-white shadow-lg rounded-lg overflow-hidden relative w-full h-[320px] cursor-pointer"
+              onClick={() => openVideoModal(lecture.file)}
+            >
+              <img 
+                src={getImageUrl(lecture.image)} 
+                alt={lecture.title} 
+                className="w-full h-full object-cover" 
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
+                <img src={PlayIcon} alt="Play" className="w-12 h-12" />
+              </div>
+            </div>
+
+            <div className="p-4 text-center">
+              <h3 className="text-[20px] font-jakarta font-semibold mb-2">{lecture.title}</h3>
+              <p className="text-gray-600">{lecture.subject}</p>
+              <p className="text-gray-500 text-sm mt-2">Duration: {lecture.duration} minutes</p>
+            </div>
+          </SimpleCard>
         ))}
       </div>
 

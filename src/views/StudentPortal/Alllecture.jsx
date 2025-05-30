@@ -12,6 +12,7 @@ const BACKEND_URL = 'http://localhost:5000';
 const AllLecture = () => {
   const [intermediateLectures, setIntermediateLectures] = useState([]);
   const [graduateLectures, setGraduateLectures] = useState([]);
+  const [postGraduateLectures, setPostGraduateLectures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentVideo, setCurrentVideo] = useState("");
@@ -24,9 +25,11 @@ const AllLecture = () => {
           // Separate lectures by academic level
           const intermediate = response.data.data.filter(lecture => lecture.level === 'Intermediate');
           const graduate = response.data.data.filter(lecture => lecture.level === 'Graduate');
+          const postGraduate = response.data.data.filter(lecture => lecture.level === 'Post Graduate');
           
           setIntermediateLectures(intermediate);
           setGraduateLectures(graduate);
+          setPostGraduateLectures(postGraduate);
         }
         setLoading(false);
       } catch (error) {
@@ -126,6 +129,45 @@ const AllLecture = () => {
             <SimpleCard
               padding="0px"
               bgColor="bg-white"
+              key={index}
+              className="w-[400px] h-[500px] flex flex-col justify-between items-center cursor-pointer"
+            >
+              <div
+                className="bg-white shadow-lg rounded-lg overflow-hidden relative w-full h-[320px] cursor-pointer"
+                onClick={() => openVideoModal(lecture.file)}
+              >
+                <img 
+                  src={getImageUrl(lecture.image)} 
+                  alt={lecture.title} 
+                  className="w-full h-full object-cover" 
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
+                  <img src={PlayIcon} alt="Play" className="w-12 h-12" />
+                </div>
+              </div>
+
+              <div className="p-4 text-center">
+                <h3 className="text-[20px] font-jakarta font-semibold mb-2">{lecture.title}</h3>
+                <p className="text-gray-600">{lecture.subject}</p>
+                <p className="text-gray-500 text-sm mt-2">Duration: {lecture.duration} minutes</p>
+              </div>
+            </SimpleCard>
+          ))}
+        </div>
+      </div>
+
+      {/* ✅ Post Graduate Lectures Section */}
+      <div className="bg-white h-auto flex flex-col items-center px-8 pb-8 mb-7 text-black relative w-auto">
+        <div className="w-full flex items-center justify-center relative mb-12 mt-12">
+          <HeadingTitle title="Post Graduate Level Lectures" width="320px" />
+        </div>
+        <HeadingWithButton headingText="Lecture Series" buttonText="" />
+
+        <div className="w-full flex flex-wrap justify-center gap-10">
+          {postGraduateLectures.map((lecture, index) => (
+            <SimpleCard
+              padding="0px"
+              bgColor="bg-gray"
               key={index}
               className="w-[400px] h-[500px] flex flex-col justify-between items-center cursor-pointer"
             >

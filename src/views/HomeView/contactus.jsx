@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import axios from "axios";
 import BaseCard from "../../components/card";
 import HeadingTitle from "../../components/heading";
 import Button from "../../components/button";
+
+const BACKEND_URL = 'http://localhost:5000';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -51,13 +54,40 @@ const ContactForm = () => {
   };
 
   // ✅ **Handle Form Submit**
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      alert("Form submitted successfully!");
-      // ✅ Reset form after submission
-      setFormData({ name: "", email: "", message: "" });
-      setErrors({});
+      try {
+        // Get token from localStorage if available
+        const token = localStorage.getItem('token');
+        
+        // Set up headers with token if it exists
+        const config = token ? {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        } : {};
+        
+        // Send form data to backend with config
+        const response = await axios.post(
+          `${BACKEND_URL}/api/contact/submit`,
+          formData,
+          config
+        );
+        
+        if (response.data.success) {
+          alert("Form submitted successfully!");
+          // Reset form after submission
+          setFormData({ name: "", email: "", message: "" });
+          setErrors({});
+        } else {
+          alert(response.data.message || "Failed to submit form. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        alert("An error occurred while submitting the form. Please try again later.");
+      }
     }
   };
 

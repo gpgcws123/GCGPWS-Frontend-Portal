@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import axios from 'axios';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -7,24 +8,47 @@ import HeadingTitle from "../../components/heading";
 import LeftArrowIcon from "../../assets/left-arrow-svgrepo-com.svg";
 import RightArrowIcon from "../../assets/right-arrow-svgrepo-com.svg";
 import PlayIcon from "../../assets/mdi_play.svg";
-// ✅ Dummy Video Thumbnails (Replace with your images)
 import videoThumbnail from "../../assets/CoursImages.png";
 
-// ✅ Dummy Video Source (Replace with your video links)
-const videoList = [
-  { thumbnail: videoThumbnail, src: "/videos/sample1.mp4" },
-  { thumbnail: videoThumbnail, src: "/videos/sample2.mp4" },
-  { thumbnail: videoThumbnail, src: "/videos/sample3.mp4" },
-  { thumbnail: videoThumbnail, src: "/videos/sample4.mp4" },
-];
+const BACKEND_URL = 'http://localhost:5000';
+
+
 
 const VideoSection = () => {
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const [swiperInstance, setSwiperInstance] = useState(null);
-
+  const [videoList, setVideoList] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentVideo, setCurrentVideo] = useState("");
+  
+  // Fetch latest videos from cultural activities
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        console.log('Fetching cultural videos...');
+        const response = await axios.get(`${BACKEND_URL}/api/news-events/cultural/list`);
+        
+        if (response.data && Array.isArray(response.data.data)) {
+          // Filter items with videos and limit to 5
+          const videos = response.data.data
+            .filter(item => item.video)
+            .slice(0, 5)
+            .map(item => ({
+              title: item.title || 'Cultural Video',
+              thumbnail: item.image ? `${BACKEND_URL}${item.image}` : videoThumbnail,
+              src: `${BACKEND_URL}${item.video}`
+            }));
+          setVideoList(videos);
+        }
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+        setVideoList([]);
+      }
+    };
+    
+    fetchVideos();
+  }, []);
 
   useEffect(() => {
     if (swiperInstance && swiperInstance.navigation && prevRef.current && nextRef.current) {
@@ -49,7 +73,7 @@ const VideoSection = () => {
     <div className="bg-gray h-auto flex flex-col items-center px-8 py-8 text-black relative w-auto">
       {/* ✅ Heading with Arrows */}
       <div className="w-full flex items-center justify-center relative mb-8">
-        <HeadingTitle title="Videos" width="220px" />
+        <HeadingTitle title="Cultural Videos" width="300px" />
         <div className="absolute right-0 flex gap-4">
           <div ref={prevRef} className="cursor-pointer z-10">
             <img src={LeftArrowIcon} alt="Left" className="w-8 h-8" />
@@ -83,7 +107,18 @@ const VideoSection = () => {
               className="bg-white shadow-lg rounded-lg overflow-hidden relative w-[400px] h-[250px] mx-auto cursor-pointer"
               onClick={() => openVideoModal(video.src)}
             >
-              <img src={video.thumbnail} alt={`Video ${index + 1}`} className="w-full h-full object-cover" />
+              <img 
+                src={video.thumbnail} 
+                alt={video.title || `Video ${index + 1}`} 
+                className="w-full h-full object-cover" 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = videoThumbnail;
+                }}
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white p-2 text-center">
+                <p className="truncate text-sm font-medium">{video.title}</p>
+              </div>
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
                 <img src={PlayIcon} alt="Play" className="w-12 h-12" />
               </div>

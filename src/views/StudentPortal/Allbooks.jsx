@@ -11,6 +11,7 @@ const BACKEND_URL = 'http://localhost:5000';
 const AllBooks = () => {
   const [intermediateBooks, setIntermediateBooks] = useState([]);
   const [graduateBooks, setGraduateBooks] = useState([]);
+  const [postGraduateBooks, setPostGraduateBooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,12 +24,15 @@ const AllBooks = () => {
           // Separate books by academic level
           const intermediate = response.data.data.filter(book => book.level === 'Intermediate');
           const graduate = response.data.data.filter(book => book.level === 'Graduate');
+          const postGraduate = response.data.data.filter(book => book.level === 'Post Graduate');
           
           console.log('Intermediate books:', intermediate);
           console.log('Graduate books:', graduate);
+          console.log('Post Graduate books:', postGraduate);
           
           setIntermediateBooks(intermediate);
           setGraduateBooks(graduate);
+          setPostGraduateBooks(postGraduate);
         }
         setLoading(false);
       } catch (error) {
@@ -125,6 +129,55 @@ const AllBooks = () => {
 
         <div className="flex flex-wrap justify-center gap-8 p-6 pb-7">
           {graduateBooks.map((book, index) => (
+            <SimpleCard
+              bgColor="bg-white"
+              key={index}
+              padding="p-0"
+              width="w-[370px]"
+              height="h-[450px]"
+              className="flex flex-col justify-between"
+            >
+              <div className="w-full flex justify-center p-4">
+                <img
+                  src={getImageUrl(book.image)}
+                  alt={book.title}
+                  className="w-[150px] h-[250px] object-contain"
+                />
+              </div>
+
+              <div className="border-b-8 border-black w-full my-2" />
+
+              <div className="flex flex-col justify-between flex-1 px-5">
+                <div className="text-center">
+                  <h2 className="font-bold font-jakarta text-[22px]">{book.title}</h2>
+                  <p className="text-gray-600 mt-2">{book.author}</p>
+                </div>
+
+                <div className="flex justify-center mb-4">
+                  <Button
+                    onClick={() => window.open(`${BACKEND_URL}/${book.file}`, '_blank')}
+                    rounded="rounded-[10px]"
+                    height="43px"
+                    width="370px"
+                    boxShadow={false}
+                    title="View PDF"
+                  />
+                </div>
+              </div>
+            </SimpleCard>
+          ))}
+        </div>
+      </div>
+
+      {/* ✅ Post Graduate Books Section */}
+      <div className="my-8 p-4">
+        <div className="my-8 text-center">
+          <HeadingTitle title="Post Graduate Books Collection" width="640px" />
+        </div>
+        <HeadingWithButton headingText="Post Graduate Level" buttonText="" />
+
+        <div className="flex flex-wrap justify-center gap-8 p-6 pb-7">
+          {postGraduateBooks.map((book, index) => (
             <SimpleCard
               bgColor="bg-white"
               key={index}

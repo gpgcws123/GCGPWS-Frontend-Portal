@@ -151,36 +151,41 @@ const HomePageUpdate = () => {
   const handleImageChange = (e) => {
     if (selectedSection === 'hero') {
       const files = Array.from(e.target.files);
+      console.log('Selected files:', files);
+      
       if (files.length > 0) {
         if (files.length > 5) {
           alert('You can only upload up to 5 images for the hero section');
           return;
         }
-
-        const newPreviewImages = files.map(file => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          return new Promise(resolve => {
-            reader.onloadend = () => {
-              resolve(reader.result);
-            };
+        
+        // Store the actual files
+        setSelectedImages(files);
+        
+        // Create preview URLs
+        const readers = files.map(file => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(file);
           });
         });
-
-        Promise.all(newPreviewImages).then(urls => {
-          setPreviewImages(prev => [...prev, ...urls]);
-          setSelectedImages(prev => [...prev, ...files]);
+        
+        Promise.all(readers).then(results => {
+          console.log('Preview images created');
+          setPreviewImages(results);
         });
       }
-    } else if (selectedSection !== 'stats' && selectedSection !== 'topstories' && selectedSection !== 'noticeboard' && selectedSection !== 'whychooseus') {
+    } else {
       const file = e.target.files[0];
       if (file) {
+        console.log('Selected single file:', file);
+        setSelectedImage(file);
         const reader = new FileReader();
         reader.onloadend = () => {
           setPreviewImage(reader.result);
         };
         reader.readAsDataURL(file);
-        setSelectedImage(file);
       }
     }
   };
@@ -193,25 +198,97 @@ const HomePageUpdate = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      const formDataToSend = new FormData();
+      const submitFormData = new FormData();
 
-      if (selectedSection !== 'hero') {
-        formDataToSend.append('title', formData.title);
-        formDataToSend.append('description', formData.description);
+      // Append title and description
+      if (formData.title !== undefined) {
+        submitFormData.append('title', formData.title);
+        console.log('Submitting title:', formData.title);
       }
-
+      
+      if (formData.description !== undefined) {
+        submitFormData.append('description', formData.description);
+        console.log('Submitting description:', formData.description);
+      }
+      
+      // Handle different section types
       if (selectedSection === 'hero') {
-        selectedImages.forEach((image) => {
-          formDataToSend.append('images', image);
-        });
-      } else if (selectedSection === 'stats' || selectedSection === 'topstories' || selectedSection === 'noticeboard' || selectedSection === 'whychooseus') {
-        formDataToSend.append('items', JSON.stringify(formData.items.map(item => {
-          const { image, ...rest } = item;
-          return rest;
-        })));
+        console.log('Submitting hero section data');
+        
+        // Append any existing images
+        if (formData.images && formData.images.length > 0) {
+          console.log('Existing images:', formData.images);
+          submitFormData.append('existingImages', JSON.stringify(formData.images));
+        }
+        
+        // Append new images
+        if (selectedImages && selectedImages.length > 0) {
+          console.log('New images to upload:', selectedImages);
+          selectedImages.forEach((image, index) => {
+            submitFormData.append('images', image);
+          });
+        }
+        
+        // Log the form data
+        for (let pair of submitFormData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+      } else if (selectedSection === 'stats' || selectedSection === 'topstories' || 
+                 selectedSection === 'noticeboard' || selectedSection === 'whychooseus') {
+        // Handle sections with items
+        if (Array.isArray(formData.items)) {
+          // First, handle any file uploads separately
+          let hasFileUploads = false;
+          formData.items.forEach((item, index) => {
+            if (item.image instanceof File) {
+              hasFileUploads = true;
+              // Append the file with a special name that includes the index
+              submitFormData.append(`itemImage_${index}`, item.image);
+            }
+          });
+          
+          // Process items to ensure no undefined values and handle images properly
+          const cleanItems = formData.items.map((item, index) => {
+            const cleanItem = {};
+            
+            // Copy basic properties
+            if (item.title !== undefined) cleanItem.title = item.title;
+            if (item.description !== undefined) cleanItem.description = item.description;
+            if (item.buttonText !== undefined) cleanItem.buttonText = item.buttonText;
+            if (item.buttonLink !== undefined) cleanItem.buttonLink = item.buttonLink;
+            if (item.number !== undefined) cleanItem.number = item.number;
+            
+            // Handle image properly - don't include File objects in JSON
+            if (item.image) {
+              if (item.image instanceof File) {
+                // For File objects, we'll use a placeholder that the backend can replace
+                cleanItem.image = `__TEMP_FILE_${index}__`;
+              } else if (typeof item.image === 'string') {
+                // For existing image paths, keep them as is
+                cleanItem.image = item.image;
+              }
+            }
+            
+            return cleanItem;
+          });
+          
+          // Convert to JSON string for backend
+          submitFormData.append('items', JSON.stringify(cleanItems));
+          
+          // Add a flag to indicate if we have file uploads
+          submitFormData.append('hasFileUploads', hasFileUploads ? 'true' : 'false');
+        } else {
+          // If no items, send an empty array
+          submitFormData.append('items', JSON.stringify([]));
+        }
       } else if (selectedImage) {
-        formDataToSend.append('image', selectedImage);
+        // Handle single image sections
+        submitFormData.append('image', selectedImage);
+      } else if (formData.image) {
+        // Keep existing image
+        submitFormData.append('existingImage', formData.image);
       }
 
       const config = {
@@ -220,7 +297,8 @@ const HomePageUpdate = () => {
         }
       };
 
-      await axios.put(`${BACKEND_URL}/api/homepage/${selectedSection}`, formDataToSend, config);
+      console.log('Submitting data:', formData);
+      const response = await axios.post(`${BACKEND_URL}/api/homepage/${selectedSection}`, submitFormData, config);
       await fetchSectionData();
       setIsModalOpen(false);
       setLoading(false);
@@ -252,11 +330,14 @@ const HomePageUpdate = () => {
     let limit = -1;
     if (selectedSection === 'topstories' || selectedSection === 'noticeboard') {
       limit = 5;
-    } else if (selectedSection === 'whychooseus' || selectedSection === 'stats') {
+    } else if (['topstories', 'whychooseus', 'stats'].includes(selectedSection)) {
       limit = 4;
     }
-
-    if (limit !== -1 && formData.items.length >= limit) {
+    
+    // Initialize items array if it doesn't exist
+    const currentItems = Array.isArray(formData.items) ? formData.items : [];
+    
+    if (limit !== -1 && currentItems.length >= limit) {
       alert(`Maximum ${limit} items allowed for ${sections.find(s => s.id === selectedSection)?.name}`);
       return;
     }
@@ -302,58 +383,95 @@ const HomePageUpdate = () => {
   const handleItemSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const newItems = [...formData.items];
-
+    
     try {
-      const itemFormData = new FormData();
+      const formDataToSend = new FormData();
 
-      Object.keys(selectedItem).forEach(key => {
-        if (key !== 'image' && key !== 'previewImage' && key !== 'index') {
-          itemFormData.append(key, selectedItem[key]);
+      // Add current section data
+      formDataToSend.append('title', formData.title || '');
+      formDataToSend.append('description', formData.description || '');
+
+      // Initialize items array if it doesn't exist
+      const newItems = Array.isArray(formData.items) ? [...formData.items] : [];
+      
+      // Create a clean item object
+      const cleanItem = {
+        title: selectedItem.title || '',
+        description: selectedItem.description || '',
+        buttonText: selectedItem.buttonText || '',
+        buttonLink: selectedItem.buttonLink || '',
+        number: selectedItem.number || '',
+        image: selectedItem.image || ''
+      };
+
+      // Update or add the item
+      if (selectedItem.index !== undefined) {
+        newItems[selectedItem.index] = cleanItem;
+      } else {
+        newItems.push(cleanItem);
+      }
+
+      // Log the items data before sending
+      console.log('Items to send:', newItems);
+
+      // Append items data
+      formDataToSend.append('items', JSON.stringify(newItems));
+      
+      // Log the form data to verify
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+
+      // Handle file uploads
+      newItems.forEach((item, index) => {
+        if (item.image instanceof File) {
+          formDataToSend.append(`itemImage_${index}`, item.image);
         }
       });
 
-      if (selectedItem.image instanceof File) {
-        itemFormData.append('image', selectedItem.image);
-      } else if (typeof selectedItem.image === 'string') {
-        itemFormData.append('image', selectedItem.image);
-      }
-
-      let response;
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      // Send to backend
+      const response = await axios.post(
+        `${BACKEND_URL}/api/homepage/${selectedSection}`,
+        formDataToSend,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         }
-      };
+      );
 
-      if (selectedItem.index !== undefined) {
-        newItems[selectedItem.index] = { ...selectedItem, previewImage: undefined };
-        setFormData({ ...formData, items: newItems });
-      } else {
-        newItems.push({ ...selectedItem, previewImage: undefined });
-        setFormData({ ...formData, items: newItems });
+      if (response.data.success) {
+        // Update the form data with the response data
+        const updatedItems = Array.isArray(formData.items) ? [...formData.items] : [];
+        if (selectedItem.index !== undefined) {
+          updatedItems[selectedItem.index] = cleanItem;
+        } else {
+          updatedItems.push(cleanItem);
+        }
+        setFormData(prev => ({
+          ...prev,
+          items: updatedItems
+        }));
+        setIsItemModalOpen(false);
+        setSelectedItem(null);
+        alert('Item saved successfully!');
+        // Fetch fresh data to ensure we have the latest state
+        fetchSectionData();
       }
-
-      await handleSubmit({ preventDefault: () => {} });
-
-      setIsItemModalOpen(false);
-      setSelectedItem(null);
-      setLoading(false);
-
-      alert(selectedItem.index !== undefined ? 'Item updated successfully!' : 'Item added successfully!');
     } catch (error) {
-      console.error('Error saving item:', error);
-      setLoading(false);
+      console.error('Error handling item:', error);
       alert('Error saving item. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const chartData = {
-    labels: formData.items.map(item => item.title || 'Untitled'),
+    labels: formData.items ? formData.items.map(item => item.title || 'Untitled') : [],
     datasets: [
       {
         label: 'Statistics',
-        data: formData.items.map(item => parseInt(item.number) || 0),
+        data: formData.items ? formData.items.map(item => parseInt(item.number) || 0) : [],
         backgroundColor: [
           'rgba(54, 162, 235, 0.6)',
           'rgba(255, 99, 132, 0.6)',
@@ -519,6 +637,12 @@ const HomePageUpdate = () => {
                       >
                         Add Item
                       </button>
+                      <button
+                        onClick={(e) => handleSubmit(e)}
+                        className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors duration-300"
+                      >
+                        Save All
+                      </button>
                       {selectedSection === 'topstories' || selectedSection === 'noticeboard' || selectedSection === 'whychooseus' ? (
                         <button
                           onClick={() => setIsModalOpen(true)}
@@ -531,42 +655,202 @@ const HomePageUpdate = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {formData.items.map((item, index) => (
-                      <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow duration-300">
-                        {(selectedSection === 'topstories' || selectedSection === 'whychooseus' || selectedSection === 'stats') && item.image && (
-                          <img
-                            src={`${BACKEND_URL}/${item.image}`}
-                            alt={item.title}
-                            className="w-full h-40 object-cover rounded-lg mb-3"
-                          />
-                        )}
-                        {selectedSection === 'stats' && item.number && (
-                          <div className="text-2xl font-bold text-blue-600 mb-2">{item.number}</div>
-                        )}
-                        <h4 className="font-semibold text-lg mb-2">{item.title}</h4>
-                        <p className="text-gray-600 text-sm mb-3">{item.description}</p>
-
-                        {(selectedSection === 'topstories') && item.buttonText && (
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <span className="bg-gray-100 px-3 py-1 rounded-full">{item.buttonText}</span>
+                    {selectedSection === 'stats' && 
+                      Array.from({ length: 4 }).map((_, i) => {
+                        const item = formData.items && formData.items[i];
+                        return (
+                          <div key={`stats-${i}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow duration-300">
+                            {item ? (
+                              <>
+                                {item.image && (
+                                  <img
+                                    src={`${BACKEND_URL}/${item.image}`}
+                                    alt={item.title || 'Stat image'}
+                                    className="w-full h-40 object-cover rounded-lg mb-3"
+                                  />
+                                )}
+                                {item.number && (
+                                  <div className="text-2xl font-bold text-blue-600 mb-2">{item.number}</div>
+                                )}
+                                <h4 className="font-semibold text-lg mb-2">{item.title}</h4>
+                                <p className="text-gray-600 text-sm mb-3">{item.description}</p>
+                                <div className="flex justify-end gap-2 mt-3">
+                                  <button
+                                    onClick={() => handleEditItem(i)}
+                                    className="text-blue-500 hover:text-blue-600"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteItem(i)}
+                                    className="text-red-500 hover:text-red-600"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+                                <div className="text-4xl mb-2">+</div>
+                                <div>Add Stat {i + 1}</div>
+                                <button
+                                  onClick={handleAddItem}
+                                  className="mt-2 px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                                >
+                                  Add
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        <div className="flex justify-end gap-2 mt-3">
-                          <button
-                            onClick={() => handleEditItem(index)}
-                            className="text-blue-500 hover:text-blue-600"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteItem(index)}
-                            className="text-red-500 hover:text-red-600"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                        );
+                      })
+                    }
+                    
+                    {selectedSection === 'topstories' && 
+                      Array.from({ length: 5 }).map((_, i) => {
+                        const item = formData.items && formData.items[i];
+                        return (
+                          <div key={`story-${i}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow duration-300">
+                            {item ? (
+                              <>
+                                {item.image && (
+                                  <img
+                                    src={item.image instanceof File ? URL.createObjectURL(item.image) : 
+                                         item.image.startsWith('http') ? item.image : 
+                                         `${BACKEND_URL}/${item.image}`}
+                                    alt={item.title || 'Story image'}
+                                    className="w-full h-40 object-cover rounded-lg mb-3"
+                                  />
+                                )}
+                                <h4 className="font-semibold text-lg mb-2">{item.title}</h4>
+                                <p className="text-gray-600 text-sm mb-3">{item.description}</p>
+                                {item.buttonText && (
+                                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                                    <span className="bg-gray-100 px-3 py-1 rounded-full">{item.buttonText}</span>
+                                  </div>
+                                )}
+                                <div className="flex justify-end gap-2 mt-3">
+                                  <button
+                                    onClick={() => handleEditItem(i)}
+                                    className="text-blue-500 hover:text-blue-600"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteItem(i)}
+                                    className="text-red-500 hover:text-red-600"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+                                <div className="text-4xl mb-2">+</div>
+                                <div>Add Story {i + 1}</div>
+                                <button
+                                  onClick={handleAddItem}
+                                  className="mt-2 px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                                >
+                                  Add
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    }
+                    
+                    {selectedSection === 'whychooseus' && 
+                      Array.from({ length: 4 }).map((_, i) => {
+                        const item = formData.items && formData.items[i];
+                        return (
+                          <div key={`feature-${i}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow duration-300">
+                            {item ? (
+                              <>
+                                {item.image && (
+                                  <img
+                                    src={item.image instanceof File ? URL.createObjectURL(item.image) : 
+                                         item.image.startsWith('http') ? item.image : 
+                                         `${BACKEND_URL}/${item.image}`}
+                                    alt={item.title || 'Feature image'}
+                                    className="w-full h-40 object-cover rounded-lg mb-3"
+                                  />
+                                )}
+                                <h4 className="font-semibold text-lg mb-2">{item.title}</h4>
+                                <p className="text-gray-600 text-sm mb-3">{item.description}</p>
+                                <div className="flex justify-end gap-2 mt-3">
+                                  <button
+                                    onClick={() => handleEditItem(i)}
+                                    className="text-blue-500 hover:text-blue-600"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteItem(i)}
+                                    className="text-red-500 hover:text-red-600"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+                                <div className="text-4xl mb-2">+</div>
+                                <div>Add Feature {i + 1}</div>
+                                <button
+                                  onClick={handleAddItem}
+                                  className="mt-2 px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                                >
+                                  Add
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    }
+                    
+                    {selectedSection === 'noticeboard' && 
+                      Array.from({ length: 5 }).map((_, i) => {
+                        const item = formData.items && formData.items[i];
+                        return (
+                          <div key={`notice-${i}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow duration-300">
+                            {item ? (
+                              <>
+                                <h4 className="font-semibold text-lg mb-2">{item.title}</h4>
+                                <p className="text-gray-600 text-sm mb-3">{item.description}</p>
+                                <div className="flex justify-end gap-2 mt-3">
+                                  <button
+                                    onClick={() => handleEditItem(i)}
+                                    className="text-blue-500 hover:text-blue-600"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteItem(i)}
+                                    className="text-red-500 hover:text-red-600"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+                                <div className="text-4xl mb-2">+</div>
+                                <div>Add Notice {i + 1}</div>
+                                <button
+                                  onClick={handleAddItem}
+                                  className="mt-2 px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                                >
+                                  Add
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    }
                   </div>
                 </div>
               ) : (

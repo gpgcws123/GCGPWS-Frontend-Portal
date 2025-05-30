@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import axios from 'axios';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -12,17 +13,48 @@ import Button from "../../components/button";
 import LeftArrowIcon from "../../assets/left-arrow-svgrepo-com.svg";
 import RightArrowIcon from "../../assets/right-arrow-svgrepo-com.svg";
 
-// ✅ Gallery Images
+// ✅ Gallery Images (fallback)
 import galleryImg1 from "../../assets/Sport.jpg";
 import galleryImg2 from "../../assets/Culture.jpg";
 import galleryImg3 from "../../assets/convocation.jpg";
 import galleryImg4 from "../../assets/independence.jpg";
 import galleryImg5 from "../../assets/planting.jpg";
 
+const BACKEND_URL = 'http://localhost:5000';
+
 const GallerySection = () => {
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const [swiperInstance, setSwiperInstance] = useState(null);
+  const [eventList, setEventList] = useState([]);
+  
+  // Fetch events from API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        console.log('Fetching events data...');
+        const response = await axios.get(`${BACKEND_URL}/api/news-events/events/list`);
+        
+        if (response.data && Array.isArray(response.data.data)) {
+          // Get top 5 events
+          const events = response.data.data.slice(0, 5).map(item => ({
+            date: item.date ? new Date(item.date).getDate().toString().padStart(2, '0') : '',
+            monthYear: item.date ? new Date(item.date).toLocaleString('default', { month: 'short', year: 'numeric' }) : '',
+            title: item.title,
+            description: item.description,
+            image: item.image ? `${BACKEND_URL}${item.image.startsWith('/') ? '' : '/'}${item.image}` : galleryImg1,
+            _id: item._id
+          }));
+          setEventList(events);
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setEventList(sessionData);
+      }
+    };
+    
+    fetchEvents();
+  }, []);
 
   useEffect(() => {
     if (swiperInstance && swiperInstance.navigation && prevRef.current && nextRef.current) {
@@ -116,7 +148,7 @@ const GallerySection = () => {
           1024: { slidesPerView: 3 },
         }}
       >
-        {sessionData.map((session, index) => (
+        {(eventList.length > 0 ? eventList : sessionData).map((session, index) => (
           <SwiperSlide key={index} className="transition-transform duration-500 ease-in-out">
             <SimpleCard boxShadow={false} width="w-[400px]" height="h-[500px]" className="!p-0 flex flex-col justify-between">
               <div className="relative w-full h-[250px]">
@@ -124,6 +156,10 @@ const GallerySection = () => {
                   src={session.image}
                   alt={session.title}
                   className="w-full h-full object-cover rounded-t-[10px]"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = galleryImg1;
+                  }}
                 />
                 <div className="absolute top-0 left-4 bg-black text-white px-4 py-2 rounded-b-[10px] text-center">
                   <div className="font-bold  text-[22px]">{session.date}</div>
@@ -146,7 +182,7 @@ const GallerySection = () => {
                 width="400px"
                 boxShadow={false}
                 title="Learn More"
-               to='/academic/Detailpage'
+                to={session._id ? `/events/${session._id}` : '/academic/Detailpage'}
               />
             </SimpleCard>
           </SwiperSlide>
