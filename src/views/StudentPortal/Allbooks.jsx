@@ -8,7 +8,7 @@ import axios from 'axios';
 
 const BACKEND_URL = 'http://localhost:5000';
 
-const AllBooks = () => {
+const Allbooks = () => {
   const [intermediateBooks, setIntermediateBooks] = useState([]);
   const [graduateBooks, setGraduateBooks] = useState([]);
   const [postGraduateBooks, setPostGraduateBooks] = useState([]);
