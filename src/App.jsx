@@ -12,7 +12,7 @@ import SignupPage from './components/signup';
 import ProtectedRoute from './components/protectedRuotes';
 import StudentPortalView from './views/StudentPortal/Studentportal';
 import StudentMainLayout from './components/mainlayout';
-import AllBooks from './views/StudentPortal/AllBooks';
+import AllBooks from './views/StudentPortal/Allbooks';
 import AllNotes from './views/StudentPortal/Allnotes';
 import Alllecture from './views/StudentPortal/Alllecture';
 import AllLecture from './views/StudentPortal/Alllecture';
